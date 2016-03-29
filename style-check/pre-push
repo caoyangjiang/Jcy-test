@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+DIR="$(pwd)"
+CHECKER="python $DIR/style-check/cpplint.py"
+while read local_ref local_sha remote_ref remote_sha;
+do
+    CHANGED_FILES=`git diff --name-only $local_sha $remote_sha | grep '\(cpp\|h\|cu\)$'`
+    if [ ! -z "$CHANGED_FILES" -a "$CHANGED_FILES" != " " ]; then
+        echo $CHANGED_FILES | xargs $CHECKER
+        RET=$?
+        if [ $RET -ne 0 ]; then
+            echo "There is error(s) from style-check. Please fix them before push to the repo."
+            exit $RET
+        fi
+    fi
+done
+exit 0
