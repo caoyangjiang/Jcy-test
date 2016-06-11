@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <list>
 #include <memory>
 
 #define c 32
@@ -18,12 +19,26 @@ uint64_t opposite_bits = 0;
 uint64_t range         = 0;
 int index              = 0;
 uint64_t value         = 0;
-uint64_t bit           = 0;
-uint64_t cum           = 0;
-uint64_t model[]       = {100, 50, 0};
+// uint64_t bit           = 0;
+uint64_t cum     = 0;
+uint64_t model[] = {100, 75, 50, 25, 0};
+#define SYMBOLCOUNT 4
+std::list<bool> bits;
+
+std::ostream& operator<<(std::ostream& os, const std::list<bool>& list)
+{
+  for (std::list<bool>::const_iterator it = list.begin(); it != list.end();
+       it++)
+  {
+    os << *it;
+  }
+  return os;
+}
 
 void encode(int index, uint64_t* cum_freq)
 {
+  std::cout << "SymHi " << cum_freq[index - 1] << std::endl;
+  std::cout << "SymLow " << cum_freq[index] << std::endl;
   range = high - low + 1;
   high  = low + (range * cum_freq[index - 1]) / cum_freq[0] - 1;
   low   = low + (range * cum_freq[index]) / cum_freq[0];
@@ -31,19 +46,20 @@ void encode(int index, uint64_t* cum_freq)
   {
     if (high < Half)
     {
-      std::cout << "0" << std::endl;
+      bits.push_back(0);
       while (opposite_bits > 0)
       {
-        std::cout << "1" << std::endl;
+        bits.push_back(1);
         opposite_bits--;
       }
     }
     else if (low >= Half)
     {
-      std::cout << "1" << std::endl;
+      bits.push_back(1);
+
       while (opposite_bits > 0)
       {
-        std::cout << "0" << std::endl;
+        bits.push_back(0);
         opposite_bits--;
       }
       low -= Half;
@@ -70,19 +86,19 @@ void encoder_flush()
   opposite_bits++;
   if (low < Qtr)
   {
-    std::cout << "0" << std::endl;
+    bits.push_back(0);
     while (opposite_bits > 0)
     {
-      std::cout << "1" << std::endl;
+      bits.push_back(1);
       opposite_bits--;
     }
   }
   else
   {
-    std::cout << "1" << std::endl;
+    bits.push_back(1);
     while (opposite_bits > 0)
     {
-      std::cout << "0" << std::endl;
+      bits.push_back(0);
       opposite_bits--;
     }
   }
@@ -96,7 +112,7 @@ int decode(uint64_t* cum_freq)
   cum   = ((value - low + 1) * cum_freq[0] - 1) / range;
 
   index = 0;
-  for (int i = 1; i < 3; i++)
+  for (int i = 1; i < SYMBOLCOUNT + 1; i++)
   {
     // std::cout << cum_freq[i] << " " << cum << " " << cum_freq[i - 1]
     //           << std::endl;
@@ -132,8 +148,18 @@ int decode(uint64_t* cum_freq)
       break;
     }
     low <<= 1;
-    high  = 2 * high + 1;
-    value = 2 * value + 1;
+    high = 2 * high + 1;
+
+    if (bits.size() != 0)
+    {
+      bool bit = bits.front();
+      bits.pop_front();
+      value = 2 * value + uint64_t(bit);
+    }
+    else
+    {
+      value = 2 * value;
+    }
   }
 
   return index;
@@ -146,38 +172,60 @@ void decoder_reset()
   high  = Top;
   for (int i = 1; i <= c; i++)
   {
+    if (bits.size() != 0)
+    {
+      bool bit = bits.front();
+      bits.pop_front();
+      value = 2 * value + uint64_t(bit);
+    }
+    else
+    {
+      // Else append 0
+      value = 2 * value;
+    }
   }
+  std::cout << value << std::endl;
 }
 int main()
 {
   std::cout << c << " " << std::hex << static_cast<uint32_t>(Top) << " "
             << static_cast<uint32_t>(Qtr) << " " << static_cast<uint32_t>(Half)
             << " " << static_cast<uint32_t>(Qtr3) << std::endl;
-  int sym[] = {1, 1, 1, 2};
+  int sym[] = {1, 1, 2, 4, 1, 2, 3};
 
   std::cout << "Encode " << std::endl;
   low           = 0;
   high          = Top;
   opposite_bits = 0;
   range         = 0;
-  for (size_t i = 0; i < 3; i++)
+
+  for (size_t i = 0; i < 7; i++)
+  {
+    std::cout << "Encode symbol " << sym[i] << std::endl;
     encode(sym[i], reinterpret_cast<uint64_t*>(model));
+  }
   encoder_flush();
 
+  std::cout << "[Encoded bits]: " << bits << std::endl;
+
+  std::cout << "Decode " << std::endl;
   low           = 0;
   high          = Top;
   opposite_bits = 0;
   range         = 0;
-  value         = 0xE0000000;
+  value         = 0;
 
-  // std::cout << std::hex << value << std::endl;
-
-  std::cout << "Decode " << std::endl;
-  // decode(reinterpret_cast<uint64_t*>(model));
-
-  while (decode(reinterpret_cast<uint64_t*>(model)) != 2)
-  {
-  }
+  decoder_reset();
+  decode(reinterpret_cast<uint64_t*>(model));
+  decode(reinterpret_cast<uint64_t*>(model));
+  decode(reinterpret_cast<uint64_t*>(model));
+  decode(reinterpret_cast<uint64_t*>(model));
+  decode(reinterpret_cast<uint64_t*>(model));
+  decode(reinterpret_cast<uint64_t*>(model));
+  decode(reinterpret_cast<uint64_t*>(model));
+  // while (decode(reinterpret_cast<uint64_t*>(model)) != 3)
+  // {
+  // }
 
   return 0;
 }
