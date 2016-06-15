@@ -64,13 +64,13 @@ class ArithmeticCodec
       UpdateModel(symidx);
     }
 
-    std::cout << CodeValueBits_ << " " << std::hex << TopValue_ << " "
-              << QtrValue_ << " " << HalfValue_ << " " << Qtr3Value_
-              << std::endl;
+    // std::cout << CodeValueBits_ << " " << std::hex << TopValue_ << " "
+    //           << QtrValue_ << " " << HalfValue_ << " " << Qtr3Value_
+    //           << std::endl;
 
-    std::cout << std::dec << probmodel_.size() << " / " << probmodel_
-              << std::endl;
-    std::cout << std::dec << pmf_.size() << " / " << pmf_ << std::endl;
+    // std::cout << std::dec << probmodel_.size() << " / " << probmodel_
+    //           << std::endl;
+    // std::cout << std::dec << pmf_.size() << " / " << pmf_ << std::endl;
 
     return true;
   }
@@ -84,7 +84,8 @@ class ArithmeticCodec
     }
 
     probmodel_.assign(symprob.size() + 1, 0);
-    pmf_ = symprob;
+    pmf_          = symprob;
+    probmodel_[0] = 0;
 
     // Find out total probability
     for (size_t i = 0; i < symprob.size(); i++)
@@ -98,9 +99,10 @@ class ArithmeticCodec
       probmodel_[i] = probmodel_[i - 1] - pmf_[i - 1];
     }
 
-    std::cout << std::dec << probmodel_.size() << " / " << probmodel_
-              << std::endl;
-    std::cout << std::dec << pmf_.size() << " / " << pmf_ << std::endl;
+    // std::cout << "pmf " << pmf_ << std::endl;
+    // std::cout << std::dec << probmodel_.size() << " / " << probmodel_
+    //           << std::endl;
+    // std::cout << std::dec << pmf_.size() << " / " << pmf_ << std::endl;
     return true;
   }
 
@@ -119,7 +121,7 @@ class ArithmeticCodec
 
     EncodeFlush();
 
-    std::cout << codedbits_ << std::endl;
+    // std::cout << codedbits_ << std::endl;
     return true;
   }
 
@@ -134,7 +136,7 @@ class ArithmeticCodec
     {
       syms_.push_back(DecodeSymbol());
     }
-    std::cout << syms_ << std::endl;
+    // std::cout << syms_ << std::endl;
     return true;
   }
 
@@ -160,8 +162,9 @@ class ArithmeticCodec
            (range_ * static_cast<uint64_t>(probmodel_[symidx + 1])) /
                static_cast<uint64_t>(probmodel_[0]);
 
-    std::cout << "Encode " << symidx << " " << probmodel_[symidx + 1] << " "
-              << probmodel_[symidx] << " " << low_ << " " << high_ << std::endl;
+    // std::cout << "Encode " << symidx << " " << probmodel_[symidx + 1] << " "
+    //           << probmodel_[symidx] << " " << low_ << " " << high_ <<
+    //           std::endl;
     while (true)
     {
       if (high_ < HalfValue_)
@@ -219,12 +222,13 @@ class ArithmeticCodec
         symidx = static_cast<int16_t>(i);
     }
 
-    std::cout << "sym " << symidx << " " << probmodel_[symidx + 1] << " "
-              << cumprob << " " << probmodel_[symidx] << std::endl;
+    // std::cout << "sym " << symidx << " " << probmodel_[symidx + 1] << " "
+    //           << cumprob << " " << probmodel_[symidx] << std::endl;
 
     if (symidx == -1)
     {
-      std::cout << "[Error]: Can't find corresponding symbol" << std::endl;
+      std::cout << "[Error]: Can't find corresponding symbol for " << cumprob
+                << std::endl;
       return 0;
     }
 
@@ -366,59 +370,57 @@ class ArithmeticCodec
   size_t nextbit_        = 0;
 };
 
+/**
+ * @brief      { function_description }
+ *
+ * @return     { description_of_the_return_value }
+ */
 int main()
 {
   ArithmeticCodec coder;
   std::vector<int> symprob;
   std::vector<int16_t> syms;
+  std::vector<int16_t> decodedsyms;
 
-  // for (size_t i = 0; i < 4; i++)
-  // {
-  //   symprob.push_back(1);
-  // }
+  for (size_t ss = 0; ss < 2000; ss++)
+  {
+    symprob.push_back(1);
+  }
 
-  // coder.Config(0, 3, true, true);
-  // coder.StartModel(symprob);
-
-  // syms.push_back(0);
-  // syms.push_back(0);
-  // syms.push_back(1);
-  // syms.push_back(3);
-  // syms.push_back(0);
-  // syms.push_back(1);
-  // syms.push_back(2);
-
-  // coder.Encode(syms);
-
-  symprob.push_back(381);
-  symprob.push_back(430);
-  symprob.push_back(456);
-  symprob.push_back(184);
-
-  coder.Config(0, 3, true, true);
+  coder.Config(0, 1999, true, true);
   coder.StartModel(symprob);
 
-  syms.push_back(0);
-  syms.push_back(1);
-  syms.push_back(2);
-  syms.push_back(3);
-  syms.push_back(2);
-  syms.push_back(2);
-  syms.push_back(0);
-  syms.push_back(3);
-  syms.push_back(2);
-  syms.push_back(3);
-  syms.push_back(2);
-  syms.push_back(3);
-  syms.push_back(0);
-  syms.push_back(2);
-  syms.push_back(1);
-  syms.push_back(0);
-  syms.push_back(2);
-
-  // for (size_t i = 0; i < 1000; i++) syms.push_back(0);
+  for (size_t ss = 0; ss < 2000; ss++)
+  {
+    syms.push_back(ss);
+  }
 
   coder.Encode(syms);
+
+  std::cout << coder.GetCodedBits().size() << " / " << std::endl;
+  for (size_t ss = 0; ss < 100; ss++)
+  {
+    std::cout << coder.GetCodedBits()[ss] << " ";
+  }
+
+  std::cout << std::endl;
   coder.Decode(coder.GetCodedBits(), syms.size());
+  decodedsyms = coder.GetDecodedSymbols();
+
+  if (decodedsyms.size() != syms.size())
+  {
+    std::cout << "Size miss match" << std::endl;
+    return -1;
+  }
+
+  for (size_t ss = 0; ss < decodedsyms.size(); ss++)
+  {
+    if (decodedsyms[ss] != syms[ss])
+    {
+      std::cout << "Miss match happened at " << ss << " " << decodedsyms[ss]
+                << " " << syms[ss] << std::endl;
+      return -1;
+    }
+  }
   return 0;
 }
