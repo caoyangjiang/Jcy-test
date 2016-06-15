@@ -41,48 +41,78 @@ class ArithmeticCodec
  public:
   ArithmeticCodec()
   {
+    int rfreq[3][4];
+    int rlen[3][4];
+
+    // 0: high
+    rfreq[0][0] = 1200;
+    rfreq[0][1] = 100;
+    rfreq[0][2] = 50;
+    rfreq[0][3] = 1;
+
+    rlen[0][0] = 1;
+    rlen[0][1] = 5;
+    rlen[0][2] = 5;
+    rlen[0][3] = 1989;
+
+    BuildModel(0, 4, rfreq[0], rlen[0]);
+
+    // 1: mid
+    rfreq[1][0] = 1200;
+    rfreq[1][1] = 100;
+    rfreq[1][2] = 50;
+    rfreq[1][3] = 1;
+
+    rlen[1][0] = 1;
+    rlen[1][1] = 10;
+    rlen[1][2] = 10;
+    rlen[1][3] = 1979;
+
+    BuildModel(1, 4, rfreq[1], rlen[1]);
+
+    // 2: low
+    rfreq[2][0] = 1200;
+    rfreq[2][1] = 100;
+    rfreq[2][2] = 50;
+    rfreq[2][3] = 1;
+
+    rlen[2][0] = 1;
+    rlen[2][1] = 20;
+    rlen[2][2] = 20;
+    rlen[2][3] = 1959;
+
+    BuildModel(2, 4, rfreq[2], rlen[2]);
   }
 
   ~ArithmeticCodec()
   {
   }
 
-  bool Config(int16_t symmin,
-              int16_t symmax,
-              bool isadaptive,
-              bool usedefaultmodel)
+  bool StartModel(int modelid)
   {
-    min_             = 0;
-    max_             = symmax;
-    isadaptive_      = isadaptive;
-    usedefaultmodel_ = usedefaultmodel;
-    probmodel_.assign(symmax - symmin + 2, 0);  // probmodel[0] has the total.
-    pmf_.assign(symmax - symmin + 1, 0);
+    probmodel_.assign(models_[modelid].size() + 1, 0);
+    pmf_          = models_[modelid];
+    probmodel_[0] = 0;
 
-    for (int16_t symidx = symmin; symidx <= symmax; symidx++)
+    // Find out total probability
+    for (size_t i = 0; i < pmf_.size(); i++)
     {
-      UpdateModel(symidx);
+      probmodel_[0] += pmf_[i];
     }
 
-    // std::cout << CodeValueBits_ << " " << std::hex << TopValue_ << " "
-    //           << QtrValue_ << " " << HalfValue_ << " " << Qtr3Value_
-    //           << std::endl;
-
+    // Progressively substract to obtain model
+    for (size_t i = 1; i < pmf_.size(); i++)
+    {
+      probmodel_[i] = probmodel_[i - 1] - pmf_[i - 1];
+    }
+    // std::cout << "pmf " << pmf_ << std::endl;
     // std::cout << std::dec << probmodel_.size() << " / " << probmodel_
     //           << std::endl;
-    // std::cout << std::dec << pmf_.size() << " / " << pmf_ << std::endl;
-
     return true;
   }
 
   bool StartModel(const std::vector<int>& symprob)
   {
-    if (static_cast<int16_t>(symprob.size() - 1) > max_)
-    {
-      std::cout << "[ERROR]: exceed max" << std::endl;
-      return false;
-    }
-
     probmodel_.assign(symprob.size() + 1, 0);
     pmf_          = symprob;
     probmodel_[0] = 0;
@@ -106,7 +136,7 @@ class ArithmeticCodec
     return true;
   }
 
-  bool Encode(const std::vector<int16_t>& syms)
+  bool Encode(const std::vector<int16_t>& syms, bool adaptive)
   {
     // Reset
     low_          = 0;
@@ -117,6 +147,8 @@ class ArithmeticCodec
     for (size_t i = 0; i < syms.size(); i++)
     {
       EncodeSymbol(syms[i]);
+
+      if (adaptive) UpdateModel(syms[i]);
     }
 
     EncodeFlush();
@@ -125,7 +157,7 @@ class ArithmeticCodec
     return true;
   }
 
-  bool Decode(const std::vector<bool>& bitvec, size_t symcnt)
+  bool Decode(const std::vector<bool>& bitvec, size_t symcnt, bool adaptive)
   {
     syms_.clear();
     codedbits_ = bitvec;
@@ -134,7 +166,9 @@ class ArithmeticCodec
     DecodeInit();
     for (size_t isym = 0; isym < symcnt; isym++)
     {
-      syms_.push_back(DecodeSymbol());
+      int16_t sym = DecodeSymbol();
+      syms_.push_back(sym);
+      if (adaptive) UpdateModel(sym);
     }
     // std::cout << syms_ << std::endl;
     return true;
@@ -210,7 +244,7 @@ class ArithmeticCodec
     int cumprob    = 0;
 
     range_  = static_cast<uint64_t>(high_ - low_) + 1;
-    cumprob = static_cast<int>((static_cast<uint64_t>(value_ - low_ + 1) *
+    cumprob = static_cast<int>(((static_cast<uint64_t>(value_ - low_) + 1) *
                                     static_cast<uint64_t>(probmodel_[0]) -
                                 1) /
                                range_);
@@ -329,18 +363,31 @@ class ArithmeticCodec
 
   bool UpdateModel(int16_t symidx)
   {
-    if (symidx > max_)
-    {
-      std::cout << "[ERROR]: Symbol out of bound." << std::endl;
-      return false;
-    }
-
     pmf_[symidx]++;
 
     // Adjust high for this symidx and all later intervals.
     for (int16_t i = 0; i <= symidx; i++)
     {
       probmodel_[i]++;
+    }
+
+    return true;
+  }
+
+  bool BuildModel(int modelid, int count, int rfreq[], int rlen[])
+  {
+    if (modelid > 2)
+    {
+      std::cout << "[ERROR]: Maximum allowed model id is 2" << std::endl;
+      return false;
+    }
+
+    for (int r = 0; r < count; r++)
+    {
+      for (int i = 0; i < rlen[r]; i++)
+      {
+        models_[modelid].push_back(rfreq[r]);
+      }
     }
 
     return true;
@@ -353,8 +400,6 @@ class ArithmeticCodec
   std::vector<int16_t> syms_;
   bool isadaptive_      = false;
   bool usedefaultmodel_ = true;
-  int16_t min_          = 0;
-  int16_t max_          = 65535;
 
   const uint32_t CodeValueBits_ = 32;
   const uint32_t TopValue_  = (static_cast<uint64_t>(1) << CodeValueBits_) - 1;
@@ -368,6 +413,8 @@ class ArithmeticCodec
   uint64_t range_        = 0;
   uint32_t value_        = 0;
   size_t nextbit_        = 0;
+
+  std::vector<int> models_[3];  // 0: high, 1: mid, 2: low
 };
 
 /**
@@ -387,15 +434,18 @@ int main()
     symprob.push_back(1);
   }
 
-  coder.Config(0, 1999, true, true);
-  coder.StartModel(symprob);
+  // coder.StartModel(symprob);
 
   for (size_t ss = 0; ss < 2000; ss++)
   {
-    syms.push_back(ss);
+    syms.push_back(0);
+    syms.push_back(1);
+    syms.push_back(2);
+    syms.push_back(3);
   }
 
-  coder.Encode(syms);
+  coder.StartModel(0);
+  coder.Encode(syms, false);
 
   std::cout << coder.GetCodedBits().size() << " / " << std::endl;
   for (size_t ss = 0; ss < 100; ss++)
@@ -404,7 +454,8 @@ int main()
   }
 
   std::cout << std::endl;
-  coder.Decode(coder.GetCodedBits(), syms.size());
+  coder.StartModel(0);
+  coder.Decode(coder.GetCodedBits(), syms.size(), false);
   decodedsyms = coder.GetDecodedSymbols();
 
   if (decodedsyms.size() != syms.size())
