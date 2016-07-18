@@ -184,7 +184,6 @@ class ArithmeticCodec
     return syms_;
   }
 
- private:
   void EncodeSymbol(int16_t symidx)
   {
     range_ = static_cast<uint64_t>(high_ - low_) + 1;
@@ -393,7 +392,6 @@ class ArithmeticCodec
     return true;
   }
 
- private:
   std::vector<int> probmodel_;
   std::vector<int> pmf_;
   std::vector<bool> codedbits_;
@@ -429,35 +427,42 @@ int main()
   std::vector<int16_t> syms;
   std::vector<int16_t> decodedsyms;
 
-  for (size_t ss = 0; ss < 2000; ss++)
-  {
-    symprob.push_back(1);
-  }
+  symprob.push_back(1444);
+  symprob.push_back(2);
 
   // coder.StartModel(symprob);
 
-  for (size_t ss = 0; ss < 2000; ss++)
+  for (size_t ss = 0; ss < 1446; ss++)
   {
     syms.push_back(0);
-    syms.push_back(1);
-    syms.push_back(2);
-    syms.push_back(3);
   }
 
-  coder.StartModel(0);
+  syms[9]    = 1;
+  syms[1431] = 1;
+
+  coder.StartModel(symprob);
   coder.Encode(syms, false);
 
-  std::cout << coder.GetCodedBits().size() << " / " << std::endl;
-  for (size_t ss = 0; ss < 100; ss++)
+  // std::cout << coder.GetCodedBits().size() << " / " << std::endl;
+  // for (size_t ss = 0; ss < 100; ss++)
+  // {
+  //   std::cout << coder.GetCodedBits()[ss] << " ";
+  // }
+  // std::cout << std::endl;
+
+  // coder.StartModel(0);
+
+  std::cout << coder.probmodel_ << std::endl;
+  for (size_t ss = 0; ss < coder.GetCodedBits().size(); ss++)
   {
     std::cout << coder.GetCodedBits()[ss] << " ";
   }
 
   std::cout << std::endl;
-  coder.StartModel(0);
+
+  coder.StartModel(symprob);
   coder.Decode(coder.GetCodedBits(), syms.size(), false);
   decodedsyms = coder.GetDecodedSymbols();
-
   if (decodedsyms.size() != syms.size())
   {
     std::cout << "Size miss match" << std::endl;

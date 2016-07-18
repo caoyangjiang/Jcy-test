@@ -420,11 +420,8 @@ int main(int, char** argv)
   ArrayToVector(uvbvec, uvb, 2 * fheader.vertices_size, 2);
   ArrayToVector(ibvec, ib, fheader2.indices_size);
   // ibvec.resize(5940);
-  objwriter.SaveObjFileTrunc(std::string("surfboard.obj"),
-                             std::string("surfboard.mtl"),
-                             vbvec,
-                             uvbvec,
-                             ibvec);
+  objwriter.SaveObjFileTrunc(
+      std::string("trial.obj"), std::string("trial.mtl"), vbvec, uvbvec, ibvec);
 
   // for (size_t ss = 0; ss < 15; ss++)
   // {
