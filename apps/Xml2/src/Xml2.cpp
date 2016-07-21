@@ -124,50 +124,47 @@ class XMLParser
 
     if (reader_ == NULL) return false;
 
-    bool ret = Recurse(*root_);
-    // std::cout << xmlTextReaderDepth(reader_) << std::endl;
-    // std::cout << xmlTextReaderAttributeCount(reader_) << std::endl;
-    // std::cout << xmlTextReaderConstName(reader_) << std::endl;
-    // std::cout << xmlTextReaderNodeType(reader_) << std::endl;
+    // Get things going
+    int ret      = xmlTextReaderRead(reader_);
+    int nodetype = xmlTextReaderNodeType(reader_);
 
-    // if (xmlTextReaderHasValue(reader_))
-    //   std::cout << xmlTextReaderConstValue(reader_) << std::endl;
-    // else
-    //   std::cout << "No value" << std::endl;
+    while ((nodetype == NodeType::COMMENT) ||
+           (nodetype == NodeType::WHITESPACE))
+    {
+      ret      = xmlTextReaderRead(reader_);
+      nodetype = xmlTextReaderNodeType(reader_);
+    }
 
-    // if (xmlTextReaderHasAttributes(reader_))
-    // {
-    //   while (xmlTextReaderMoveToNextAttribute(reader_))
-    //   {
-    //     std::cout << xmlTextReaderConstName(reader_) << ":"
-    //               << xmlTextReaderConstValue(reader_) << std::endl;
-    //   }
-    // }
+    if (nodetype == NodeType::ELEMENT)
+    {
+      root_->SetTag(std::string(
+          reinterpret_cast<const char *>(xmlTextReaderConstName(reader_))));
 
-    // xmlTextReaderRead(reader_);
-    // xmlTextReaderRead(reader_);
-    // std::cout << xmlTextReaderNodeType(reader_) << std::endl;
-    // std::cout << xmlTextReaderConstName(reader_) << std::endl;
+      if (xmlTextReaderHasAttributes(reader_))
+      {
+        while (xmlTextReaderMoveToNextAttribute(reader_))
+        {
+          root_->AddAttr(std::string(reinterpret_cast<const char *>(
+                             xmlTextReaderConstName(reader_))),
+                         std::string(reinterpret_cast<const char *>(
+                             xmlTextReaderConstValue(reader_))));
+        }
+      }
+    }
+    else
+    {
+      std::cout << "[ERROR]: First node is not an element node." << std::endl;
+    }
 
-    // xmlTextReaderRead(reader_);
-    // std::cout << xmlTextReaderNodeType(reader_) << std::endl;
-    // xmlTextReaderRead(reader_);
-    // std::cout << xmlTextReaderNodeType(reader_) << std::endl;
-
-    // std::cout << xmlTextReaderReadString(reader_) << std::endl;
+    // Recursively parsing nodes (Depth first)
+    Recurse(*root_);
 
     xmlFreeTextReader(reader_);
 
     RecursePrint(*root_);
-    return ret;
+    return true;
   }
 
-  std::shared_ptr<Node> &GetRoot()
-  {
-    return root_;
-  }
-
- private:
   void RecursePrint(const Node &node) const
   {
     std::cout << node.GetTag() << ": " << node.GetValue() << std::endl;
@@ -188,6 +185,12 @@ class XMLParser
     }
   }
 
+  std::shared_ptr<Node> &GetRoot()
+  {
+    return root_;
+  }
+
+ private:
   int Recurse(Node &parenode)
   {
     int ret      = xmlTextReaderRead(reader_);
@@ -203,7 +206,6 @@ class XMLParser
     if (nodetype == NodeType::ELEMENT)
     {
       // This implement may not work well for very large XML file.
-
       Node node;
       node.SetTag(std::string(
           reinterpret_cast<const char *>(xmlTextReaderConstName(reader_))));
@@ -219,6 +221,7 @@ class XMLParser
         }
       }
 
+      // Process all element typed subnodes in the next depth level.
       while (Recurse(node) == 1)
       {
       };
@@ -229,14 +232,15 @@ class XMLParser
     }
     else if (nodetype == NodeType::TEXT)
     {
-      parenode.SetValue(std::string(
-          reinterpret_cast<const char *>(xmlTextReaderReadString(reader_))));
+      xmlChar *str = xmlTextReaderReadString(reader_);
+      parenode.SetValue(std::string(reinterpret_cast<const char *>(str)));
+      xmlFree(str);
       Recurse(parenode);
-      return 0;
+      return 0;  // Stop parsing further
     }
     else if ((nodetype == END) || (ret == 0))
     {
-      return 0;
+      return 0;  // Reach end
     }
     else if (nodetype == -1)
     {
