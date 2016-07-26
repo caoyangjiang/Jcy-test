@@ -157,11 +157,13 @@ class XMLParser
     }
 
     // Recursively parsing nodes (Depth first)
-    Recurse(*root_);
+    while (Recurse(*root_) == 1)
+    {
+    };
 
     xmlFreeTextReader(reader_);
 
-    RecursePrint(*root_);
+    // RecursePrint(*root_);
     return true;
   }
 
@@ -210,6 +212,9 @@ class XMLParser
       node.SetTag(std::string(
           reinterpret_cast<const char *>(xmlTextReaderConstName(reader_))));
 
+      std::cout << parenode.GetTag() << "<-" << node.GetTag() << std::endl;
+      std::cout << ret << " " << xmlTextReaderIsEmptyElement(reader_)
+                << std::endl;
       if (xmlTextReaderHasAttributes(reader_))
       {
         while (xmlTextReaderMoveToNextAttribute(reader_))
@@ -221,10 +226,15 @@ class XMLParser
         }
       }
 
+      xmlTextReaderMoveToElement(reader_);
+
       // Process all element typed subnodes in the next depth level.
-      while (Recurse(node) == 1)
+      if ((xmlTextReaderIsEmptyElement(reader_) == 0))
       {
-      };
+        while (Recurse(node) == 1)
+        {
+        };
+      }
 
       parenode.Pushback(node);
 
