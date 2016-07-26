@@ -1,4 +1,4 @@
-
+// Copyright @ 2016 Caoyang Jiang
 #include <array>
 #include <fstream>
 #include <iostream>
