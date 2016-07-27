@@ -51,7 +51,6 @@ int decode_frame(AVCodecContext *avctx,
                  AVPacket *pkt)
 {
   int len, got_frame;
-
   len = avcodec_decode_video2(avctx, frame, &got_frame, pkt);
   if (len < 0)
   {
@@ -100,17 +99,8 @@ int main(int argc, char *argv[])
   char *input_filename  = NULL;
   int ret               = 0;
   struct buffer_data bd = {0};
-  // if (argc != 2)
-  // {
-  //   fprintf(stderr,
-  //           "usage: %s input_file\n"
-  //           "API example program to show how to read from a custom buffer "
-  //           "accessed through AVIOContext.\n",
-  //           argv[0]);
-  //   return 1;
-  // }
+
   input_filename = argv[1];
-  /* register codecs and formats and other lavf/lavc components*/
 
   /* slurp file content into buffer */
   ret = av_file_map(input_filename, &buffer, &buffer_size, 0, NULL);
@@ -146,7 +136,6 @@ int main(int argc, char *argv[])
   }
 
   fmt_ctx->streams[0]->codec->pix_fmt = AV_PIX_FMT_YUV420P;
-
   std::cout << fmt_ctx->nb_streams << " " << fmt_ctx->bit_rate << " "
             << fmt_ctx->video_codec_id << std::endl;
   ret = avformat_find_stream_info(fmt_ctx, NULL);
@@ -156,11 +145,14 @@ int main(int argc, char *argv[])
     goto end;
   }
 
-  if (avcodec_open2(codec_ctx, avcodec, NULL) < 2)
+  av_dump_format(fmt_ctx, 0, input_filename, 0);
+
+  avcodec = avcodec_find_decoder(fmt_ctx->streams[0]->codec->codec_id);
+
+  if (avcodec_open2(fmt_ctx->streams[0]->codec, avcodec, NULL) < 0)
   {
     std::cout << "Could not open codec." << std::endl;
   }
-  av_dump_format(fmt_ctx, 0, input_filename, 0);
 end:
   AVPacket avpkt;
   AVFrame *frame;
@@ -186,14 +178,10 @@ end:
 
   std::cout << fmt_ctx->streams[0]->codec->codec_id << std::endl;
 
-  if ((avcodec = avcodec_find_decoder(AV_CODEC_ID_H264)) == NULL)
-  {
-    std::cout << "unsupported codec " << std::endl;
-    return 1;
-  }
   while (avpkt.size > 0)
   {
-    if (decode_frame(codec_ctx, frame, &frame_count, &avpkt) < 0)
+    if (decode_frame(fmt_ctx->streams[0]->codec, frame, &frame_count, &avpkt) <
+        0)
     {
       std::cout << "decode_frame failed" << std::endl;
       return 1;
@@ -203,7 +191,8 @@ end:
   ifs.close();
   av_frame_free(&frame);
   avformat_close_input(&fmt_ctx);
-  /* note: the internal buffer could have changed, and be != avio_ctx_buffer */
+  /* note: the internal buffer could have changed, and be !=
+  avio_ctx_buffer */
   if (avio_ctx)
   {
     av_freep(&avio_ctx->buffer);
