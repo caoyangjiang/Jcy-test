@@ -1,11 +1,11 @@
 // Copyright @ 2016 Caoyang Jiang
 
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
 // #include "Hvr/DashVideoDecoder/Mp4Boxes.h"
 
 class NetworkBytes
@@ -157,7 +157,7 @@ class Box
     ntbytes.ReadUInt32(size_);
     ntbytes.ReadUInt32(boxtype_);
 
-    if (size_t == 1)
+    if (size_ == 1)
     {
       std::cout << "Large size is not handled." << std::endl;
       return -1;
@@ -193,7 +193,7 @@ class FullBox : protected Box
 
   int Parse(NetworkBytes& ntbytes)
   {
-    int sz = Box::Parse(stream);
+    int sz = Box::Parse(ntbytes);
     ntbytes.ReadUInt8(version_);
     ntbytes.ReadUInt24(flags_);
 
@@ -221,7 +221,7 @@ class TFDT : protected FullBox
   TFDT()
   {
   }
-  ~TFD()
+  ~TFDT()
   {
   }
 
@@ -241,6 +241,7 @@ class TFDT : protected FullBox
 
     return usedbytes;
   }
+  static const uint32_t TYPE_ = 0x74666474;
 
  private:
   uint32_t basedmediadecodetime_ = 0;
@@ -260,7 +261,7 @@ class TRUN : protected FullBox
   {
     uint32_t uint32tmp;
     int32_t int32tmp;
-    int byteused = FullBox.Parse(ntbytes);
+    int byteused = FullBox::Parse(ntbytes);
 
     ntbytes.ReadUInt32(samplecount_);
     byteused += 4;
@@ -292,11 +293,11 @@ class TRUN : protected FullBox
       if (flags_ & 0x00000200)
       {
         ntbytes.ReadUInt32(uint32tmp);
-        samplesize_.push(uint32tmp);
+        samplesize_.push_back(uint32tmp);
         byteused += 4;
       }
 
-      if (flags & 0x00000400)
+      if (flags_ & 0x00000400)
       {
         ntbytes.ReadUInt32(uint32tmp);
         sampleflags_.push_back(uint32tmp);
@@ -305,7 +306,7 @@ class TRUN : protected FullBox
 
       if (version_ == 0)
       {
-        if (flags & 0x00000800)
+        if (flags_ & 0x00000800)
         {
           ntbytes.ReadUInt32(uint32tmp);
           samplecompositiontimeoffset_.push_back(uint32tmp);
@@ -322,6 +323,8 @@ class TRUN : protected FullBox
     return byteused;
   }
 
+  static const uint32_t TYPE_ = 0x7472756e;
+
  private:
   uint32_t samplecount_ = 0;
   std::vector<int32_t> dataoffset_;
@@ -330,7 +333,75 @@ class TRUN : protected FullBox
   std::vector<uint32_t> samplesize_;
   std::vector<uint32_t> sampleflags_;
   std::vector<uint32_t> samplecompositiontimeoffset_;
-}
+};
+
+class TFHD : protected FullBox
+{
+ public:
+  TFHD()
+  {
+  }
+  ~TFHD()
+  {
+  }
+
+  int Parse(NetworkBytes& ntbytes)
+  {
+    int byteused = FullBox::Parse(ntbytes);
+    uint32_t uint32tmp;
+    uint64_t uint64tmp;
+
+    ntbytes.ReadUInt32(trackid_);
+    byteused += 4;
+
+    if (flags_ & 0x00000001)
+    {
+      ntbytes.ReadUInt64(uint64tmp);
+      basedataoffset_.push_back(uint64tmp);
+      byteused += 8;
+    }
+
+    if (flags_ & 0x00000002)
+    {
+      ntbytes.ReadUInt32(uint32tmp);
+      sampledescriptionindex_.push_back(uint32tmp);
+      byteused += 4;
+    }
+
+    if (flags_ & 0x00000008)
+    {
+      ntbytes.ReadUInt32(uint32tmp);
+      defaultsampleduration_.push_back(uint32tmp);
+      byteused += 4;
+    }
+
+    if (flags_ & 0x00000010)
+    {
+      ntbytes.ReadUInt32(uint32tmp);
+      defaultsamplesize_.push_back(uint32tmp);
+      byteused += 4;
+    }
+
+    if (flags_ & 0x00000020)
+    {
+      ntbytes.ReadUInt32(uint32tmp);
+      defaultsampleflags_.push_back(uint32tmp);
+      byteused += 4;
+    }
+
+    return byteused;
+  }
+
+  static const uint32_t TYPE_ = 0x74666864;
+
+ private:
+  uint32_t trackid_;
+  std::vector<uint64_t> basedataoffset_;
+  std::vector<uint32_t> sampledescriptionindex_;
+  std::vector<uint32_t> defaultsampleduration_;
+  std::vector<uint32_t> defaultsamplesize_;
+  std::vector<uint32_t> defaultsampleflags_;
+};
 
 class TRAF : protected Box
 {
@@ -338,7 +409,7 @@ class TRAF : protected Box
   TRAF()
   {
   }
-  ~TRAF
+  ~TRAF()
   {
   }
 
@@ -347,7 +418,7 @@ class TRAF : protected Box
     Box box;
     int byteused = Box::Parse(ntbytes);
 
-    while (byteused < size_)
+    while (byteused < static_cast<int>(size_))
     {
       box.Parse(ntbytes);
       ntbytes.SeekBack(8);
@@ -375,7 +446,7 @@ class TRAF : protected Box
       }
     }
 
-    if (byteused != size_)
+    if (byteused != static_cast<int>(size_))
     {
       std::cout << "Parse TRAF bytes failed" << std::endl;
       return 0;
@@ -384,12 +455,13 @@ class TRAF : protected Box
     return byteused;
   }
 
- private:
   static const uint32_t TYPE_ = 0x74726166;
+
+ private:
   TFHD tfhd_;
   std::vector<TFDT> tfdt_;  // size=0: none, otherwise size=1;
   std::vector<TRUN> trun_;  // size=0: none, otherwise size>0;
-}
+};
 
 /**
  * @brief      Movie Fragment Header Box (in Movie Fragment Box)
@@ -416,8 +488,9 @@ class MFHD : protected FullBox
     return sequencenumber_;
   }
 
- private:
   static const uint32_t TYPE_ = 0x6d666864;
+
+ private:
   uint32_t sequencenumber_;
 };
 
@@ -436,22 +509,28 @@ class MOOF : protected Box
 
   int Parse(NetworkBytes& ntbytes)
   {
-    Box box;
     int byteused = Box::Parse(ntbytes);
 
-    while (byteused < size_)
+    while (byteused < static_cast<int>(size_))
     {
+      Box box;
       box.Parse(ntbytes);
       ntbytes.SeekBack(8);
 
       if (box.GetType() == MFHD::TYPE_)
       {
-        byteused += mfhd_.Parse(ntbytes);
+        int sz = mfhd_.Parse(ntbytes);
+
+        if (sz == 0) return 0;
+
+        byteused += sz;
       }
       else if (box.GetType() == TRAF::TYPE_)
       {
         TRAF traf;
-        byteused += traf.Parse(ntbytes);
+        int sz = traf.Parse(ntbytes);
+        if (sz == 0) return 0;
+        byteused += sz;
         traf_.push_back(traf);
       }
       else
@@ -461,21 +540,22 @@ class MOOF : protected Box
       }
     }
 
-    if (byteused != size_)
+    if (byteused != static_cast<int>(size_))
     {
       std::cout << "Parse MOOF bytes failed" << std::endl;
+      std::cout << byteused << " " << size_ << std::endl;
       return 0;
     }
 
     return size_;
   }
 
- private:
   static const uint32_t TYPE_ = 0x6d6f6f66;
 
+ private:
   MFHD mfhd_;
   std::vector<TRAF> traf_;
-}
+};
 
 class MoofParser
 {
@@ -488,37 +568,64 @@ class MoofParser
   {
   }
 
-  bool Parse(NetworkBytes& ntbytes)
+  bool Parse(std::unique_ptr<uint8_t[]>& buffer, int buffersize)
   {
-    moof.Parse(ntbytes);
+    ntbytes_.Load(buffer, buffersize);
+
+    if (moof_.Parse(ntbytes_) == 0) return false;
+
+    return true;
   }
 
-  bool GetNextFrame(uint8_t*& packet, int& size)
-  {
-  }
+  // bool GetNextFrame(uint8_t*& packet, int& size)
+  // {
+  // }
 
-  int GetTotalSample() const
-  {
-    return totalsample;
-  }
+  // int GetTotalSample() const
+  // {
+  //   return totalsample;
+  // }
 
-  int GetCurrSampleId() const
-  {
-    return currsample;
-  }
+  // int GetCurrSampleId() const
+  // {
+  //   return currsample;
+  // }
 
-  bool Reset()
-  {
-  }
+  // bool Reset()
+  // {
+  // }
 
  private:
   int totalsample = 0;
   int currsample  = 0;
-  std::unique_ptr<*uint8_t[]> samples_;
+  MOOF moof_;
+  std::unique_ptr<uint8_t* []> samples_;
   std::unique_ptr<uint32_t[]> samplesizes_;
+  NetworkBytes ntbytes_;
 };
 
 int main(int argc, char** argv)
 {
+  std::ifstream ifs;
+  std::unique_ptr<uint8_t[]> buffer;
+  MoofParser parser;
+  int buffersize;
+
+  if (argc < 2)
+  {
+    std::cout << "Not enough argument." << std::endl;
+    return 1;
+  }
+
+  ifs.open(argv[1], std::ifstream::in | std::ifstream::binary);
+
+  ifs.seekg(0, ifs.end);
+  buffersize = ifs.tellg();
+  ifs.seekg(0, ifs.beg);
+  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[buffersize]);
+  ifs.read(reinterpret_cast<char*>(buffer.get()), buffersize);
+  parser.Parse(buffer, buffersize);
+
+  ifs.close();
   return 0;
 }
