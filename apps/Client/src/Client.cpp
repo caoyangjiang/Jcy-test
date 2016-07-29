@@ -66,7 +66,7 @@ class chat_client
   {
     boost::asio::async_read(
         socket_,
-        boost::asio::buffer(read_msg_.data(), chat_message::header_length),
+        boost::asio::buffer(read_msg_.data(), chat_message::kHeader_length),
         [this](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec && read_msg_.decode_header())
           {
@@ -145,8 +145,8 @@ int main(int argc, char* argv[])
 
     std::thread t([&io_service]() { io_service.run(); });
 
-    char line[chat_message::max_body_length + 1];
-    while (std::cin.getline(line, chat_message::max_body_length + 1))
+    char line[chat_message::kMax_body_length + 1];
+    while (std::cin.getline(line, chat_message::kMax_body_length + 1))
     {
       chat_message msg;
       msg.body_length(std::strlen(line));
