@@ -1,3 +1,4 @@
+// Copyright @ 2016 Caoyang Jiang
 
 #include <iostream>
 #include <map>
