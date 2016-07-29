@@ -45,6 +45,12 @@ struct buffer_data
   size_t size;  ///< size left in the buffer
 };
 
+struct Multi_buffer
+{
+  struct buffer_data buffers[10];
+  int usebufferid = 0;
+};
+
 int decode_frame(AVCodecContext *avctx,
                  AVFrame *frame,
                  int *frame_count,
@@ -76,20 +82,28 @@ int decode_frame(AVCodecContext *avctx,
 
 static int read_packet(void *opaque, uint8_t *buf, int buf_size)
 {
+  // struct Multi_buffer *mb = (struct Multi_buffer *)opaque;
+  // struct buffer_data *bd  = &mb->buffers[mb->usebufferid];
+
   struct buffer_data *bd = (struct buffer_data *)opaque;
-  buf_size               = FFMIN(buf_size, bd->size);
+
+  buf_size = FFMIN(buf_size, bd->size);
   printf("buf_size: %d, ptr:%p size:%zu\n", buf_size, bd->ptr, bd->size);
-  /* copy internal buffer data to buf */
+  // printf("use buffer: %d\n", mb->usebufferid);
+  /*copy internal buffer data to buf */
   memcpy(buf, bd->ptr, buf_size);
   bd->ptr += buf_size;
   bd->size -= buf_size;
+
+  // if (bd->size == 0) mb->usebufferid++;
   return buf_size;
 }
 int main(int argc, char *argv[])
 {
   avcodec_register_all();
   av_register_all();
-
+  AVPacket avpkt;
+  AVFrame *frame;
   AVFormatContext *fmt_ctx  = NULL;
   AVIOContext *avio_ctx     = NULL;
   AVCodec *avcodec          = NULL;
@@ -99,8 +113,27 @@ int main(int argc, char *argv[])
   char *input_filename  = NULL;
   int ret               = 0;
   struct buffer_data bd = {0};
-
+  struct Multi_buffer mbuffer;
   input_filename = argv[1];
+
+  std::ifstream ifs(argv[2], std::ifstream::in | std::ifstream::binary);
+  std::ifstream ifs2(argv[3], std::ifstream::in | std::ifstream::binary);
+  uint8_t inbuf[170726 + AV_INPUT_BUFFER_PADDING_SIZE];
+  uint8_t inbuf2[3900349 + AV_INPUT_BUFFER_PADDING_SIZE];
+  size_t filesize = 0;
+
+  memset(inbuf + 170726, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+  memset(inbuf2 + 3900349, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+
+  ifs.seekg(0, ifs.end);
+  filesize = ifs.tellg();
+  ifs.seekg(0, ifs.beg);
+  ifs.read(reinterpret_cast<char *>(inbuf), 170726);
+
+  ifs2.seekg(0, ifs2.end);
+  filesize = ifs2.tellg();
+  ifs2.seekg(0, ifs2.beg);
+  ifs2.read(reinterpret_cast<char *>(inbuf2), 3900349);
 
   /* slurp file content into buffer */
   ret = av_file_map(input_filename, &buffer, &buffer_size, 0, NULL);
@@ -108,6 +141,14 @@ int main(int argc, char *argv[])
   /* fill opaque structure used by the AVIOContext read callback */
   bd.ptr  = buffer;
   bd.size = buffer_size;
+
+  mbuffer.buffers[0].ptr  = buffer;
+  mbuffer.buffers[0].size = buffer_size;
+  mbuffer.buffers[1].ptr  = inbuf2;
+  mbuffer.buffers[1].size = 3900349;
+  mbuffer.buffers[2].ptr  = inbuf;
+  mbuffer.buffers[2].size = 170726;
+
   std::cout << "Buffer size " << buffer_size << std::endl;
   if (!(fmt_ctx = avformat_alloc_context()))
   {
@@ -157,31 +198,10 @@ int main(int argc, char *argv[])
     std::cout << "Could not open codec." << std::endl;
   }
 end:
-  AVPacket avpkt;
-  AVFrame *frame;
-  int frame_count = 0;
-  std::ifstream ifs(argv[2], std::ifstream::in | std::ifstream::binary);
-  uint8_t inbuf[170726 + AV_INPUT_BUFFER_PADDING_SIZE];
-  size_t filesize = 0;
 
-  memset(inbuf + 170726, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+  int frame_count = 0;
   av_init_packet(&avpkt);
   frame = av_frame_alloc();
-
-  ifs.seekg(0, ifs.end);
-  filesize = ifs.tellg();
-  ifs.seekg(0, ifs.beg);
-
-  ifs.read(reinterpret_cast<char *>(inbuf), 170726);
-  // bd.ptr  = inbuf;
-  // bd.size = 170726;
-
-  std::cout << static_cast<uint32_t>(inbuf[2]) << " 123 "
-            << static_cast<uint32_t>(inbuf[3]) << std::endl;
-
-  std::cout << fmt_ctx->streams[0]->codec->codec_id << " " << avpkt.size
-            << std::endl;
-
   while (true)
   {
     if (av_read_frame(fmt_ctx, &avpkt) < 0)
@@ -199,11 +219,12 @@ end:
       break;
     }
 
-    printf("0x%x, 0x%x, 0x%x, 0x%x\n",
-           avpkt.data[0],
-           avpkt.data[1],
-           avpkt.data[2],
-           avpkt.data[3]);
+    std::cout << avpkt.size << std::endl;
+    // printf("0x%x, 0x%x, 0x%x, 0x%x\n",
+    //        avpkt.data[0],
+    //        avpkt.data[1],
+    //        avpkt.data[2],
+    //        avpkt.data[3]);
     if (decode_frame(fmt_ctx->streams[0]->codec, frame, &frame_count, &avpkt) <
         0)
     {
@@ -212,6 +233,11 @@ end:
     }
   }
 
+  bd.ptr  = inbuf;
+  bd.size = 170726;
+  while (av_read_frame(fmt_ctx, &avpkt) < 0)
+  {
+  }
   av_packet_unref(&avpkt);
   //}
   std::cout << frame_count << std::endl;

@@ -13,14 +13,14 @@ ${PROJECT_SOURCE_DIR}/include/Jcy/Boost/SharedPtr.h
 source_group("include" FILES ${PROJECT_INCS})
 source_group("src"     FILES ${PROJECT_SRCS})
 
-find_package( Boost REQUIRED )
+find_package( Boost COMPONENTS system REQUIRED )
 
+message(Check ${Boost_LIBRARIES})
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${Boost_INCLUDE_DIRS})
+#include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
-
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} boost_system)
 
 # Group this project into "hvr-decode/modules" in Visual Studio
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Jcy-test/modules")
