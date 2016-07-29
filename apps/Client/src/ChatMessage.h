@@ -1,12 +1,7 @@
-//
-// chat_message.hpp
-// ~~~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2015 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
+// Copyright @ 2016 Caoyang Jiang
+
+#ifndef APPS_CLIENT_SRC_CHATMESSAGE_H_
+#define APPS_CLIENT_SRC_CHATMESSAGE_H_
 
 #include <cstdio>
 #include <cstdlib>
@@ -89,3 +84,5 @@ class chat_message
   char data_[kHeader_length + kMax_body_length];
   std::size_t body_length_;
 };
+
+#endif  // APPS_CLIENT_SRC_CHATMESSAGE_H_
