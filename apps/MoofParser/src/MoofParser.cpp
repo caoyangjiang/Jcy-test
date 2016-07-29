@@ -5,7 +5,9 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
+
 // #include "Hvr/DashVideoDecoder/Mp4Boxes.h"
 
 class NetworkBytes
@@ -135,6 +137,38 @@ class NetworkBytes
     return false;
   }
 
+  bool SeekForward(int bytes)
+  {
+    if (NumOfRemainingBytes() >= bytes)
+    {
+      readpos_ = readpos_ + bytes;
+      return true;
+    }
+
+    readpos_ = length_;
+    return false;
+  }
+
+  void SeekBeg()
+  {
+    readpos_ = 0;
+  }
+
+  void SeekEnd()
+  {
+    readpos_ = length_;
+  }
+
+  const uint8_t* GetRawPtr() const
+  {
+    return bytes_.get();
+  }
+
+  const uint8_t* GetCurrRawPtr() const
+  {
+    return bytes_.get() + readpos_;
+  }
+
  private:
   std::unique_ptr<uint8_t[]> bytes_;
   int length_  = 0;
@@ -241,6 +275,12 @@ class TFDT : protected FullBox
 
     return usedbytes;
   }
+
+  uint32_t GetBaseMediaDecodeTime() const
+  {
+    return basedmediadecodetime_;
+  }
+
   static const uint32_t TYPE_ = 0x74666474;
 
  private:
@@ -323,6 +363,71 @@ class TRUN : protected FullBox
     return byteused;
   }
 
+  bool IsBaseDataOffSetAvailable() const
+  {
+    return !dataoffset_.empty();
+  }
+
+  bool IsFirstSampleFlagsAvailable() const
+  {
+    return !firstsampleflags_.empty();
+  }
+
+  bool IsSampleDurationAvailable() const
+  {
+    return !sampleduration_.empty();
+  }
+
+  bool IsSampleSizeAvailable() const
+  {
+    return !samplesize_.empty();
+  }
+
+  bool IsSampleFlagsAvailable() const
+  {
+    return !sampleflags_.empty();
+  }
+
+  bool IsSampleCompositionTimeOffsetAvailable() const
+  {
+    return !samplecompositiontimeoffset_.empty();
+  }
+
+  uint32_t GetSampleCount() const
+  {
+    return samplecount_;
+  }
+
+  int32_t GetBaseDataOffset() const
+  {
+    return dataoffset_.at(0);
+  }
+
+  uint32_t GetFirstSampleFlags() const
+  {
+    return firstsampleflags_.at(0);
+  }
+
+  const std::vector<uint32_t>& GetSampleDuration() const
+  {
+    return sampleduration_;
+  }
+
+  const std::vector<uint32_t>& GetSampleSize() const
+  {
+    return samplesize_;
+  }
+
+  const std::vector<uint32_t>& GetSampleFlags() const
+  {
+    return sampleflags_;
+  }
+
+  const std::vector<uint32_t>& GetSampleCompositionTimeOffset() const
+  {
+    return samplecompositiontimeoffset_;
+  }
+
   static const uint32_t TYPE_ = 0x7472756e;
 
  private:
@@ -392,6 +497,61 @@ class TFHD : protected FullBox
     return byteused;
   }
 
+  bool IsBaseDataOffSetAvailable() const
+  {
+    return !basedataoffset_.empty();
+  }
+
+  bool IsSampleDescriptionIndexAvailable() const
+  {
+    return sampledescriptionindex_.empty();
+  }
+
+  bool IsSampleDurationAvailable() const
+  {
+    return !defaultsampleduration_.empty();
+  }
+
+  bool IsSampleSizeAvailable() const
+  {
+    return !defaultsamplesize_.empty();
+  }
+
+  bool IsSampleFlagsAvailable() const
+  {
+    return !defaultsampleflags_.empty();
+  }
+
+  uint32_t GetTrackId() const
+  {
+    return trackid_;
+  }
+
+  uint64_t GetBaseDataOffset() const
+  {
+    return basedataoffset_.at(0);
+  }
+
+  uint32_t GetSampleDescriptionIndex() const
+  {
+    return sampledescriptionindex_.at(0);
+  }
+
+  uint32_t GetSampleDuration() const
+  {
+    return defaultsampleduration_.at(0);
+  }
+
+  uint32_t GetSampleSize() const
+  {
+    return defaultsamplesize_.at(0);
+  }
+
+  uint32_t GetSampleFlags() const
+  {
+    return defaultsampleflags_.at(0);
+  }
+
   static const uint32_t TYPE_ = 0x74666864;
 
  private:
@@ -453,6 +613,31 @@ class TRAF : protected Box
     }
 
     return byteused;
+  }
+
+  bool IsTFDTAvailable() const
+  {
+    return !tfdt_.empty();
+  }
+
+  bool IsTRUNAvailable() const
+  {
+    return !trun_.empty();
+  }
+
+  const TFHD& GetTFHD() const
+  {
+    return tfhd_;
+  }
+
+  const TFDT& GetTFDT() const
+  {
+    return tfdt_.at(0);
+  }
+
+  const std::vector<TRUN>& GetTRUN() const
+  {
+    return trun_;
   }
 
   static const uint32_t TYPE_ = 0x74726166;
@@ -550,6 +735,16 @@ class MOOF : protected Box
     return size_;
   }
 
+  const MFHD& GetMFHD() const
+  {
+    return mfhd_;
+  }
+
+  const std::vector<TRAF>& GetTRAF() const
+  {
+    return traf_;
+  }
+
   static const uint32_t TYPE_ = 0x6d6f6f66;
 
  private:
@@ -574,33 +769,80 @@ class MoofParser
 
     if (moof_.Parse(ntbytes_) == 0) return false;
 
+    ExtractFrames();
+
     return true;
   }
 
-  // bool GetNextFrame(uint8_t*& packet, int& size)
-  // {
-  // }
+  bool GetNextFrame(const uint8_t*& packet, int& size)
+  {
+    if (nextavailablesampleid_ < totalsample_)
+    {
+      packet = samples_[nextavailablesampleid_].first;
+      size   = samples_[nextavailablesampleid_].second;
+      nextavailablesampleid_++;
+      return true;
+    }
 
-  // int GetTotalSample() const
-  // {
-  //   return totalsample;
-  // }
+    return false;
+  }
 
-  // int GetCurrSampleId() const
-  // {
-  //   return currsample;
-  // }
+  int GetTotalSample() const
+  {
+    return totalsample_;
+  }
 
-  // bool Reset()
-  // {
-  // }
+  int GetNextSampleId() const
+  {
+    return nextavailablesampleid_;
+  }
+
+  void ResetSampleId()
+  {
+    nextavailablesampleid_ = 0;
+  }
 
  private:
-  int totalsample = 0;
-  int currsample  = 0;
+  void ExtractFrames()
+  {
+    const TRUN& trun = moof_.GetTRAF().at(0).GetTRUN().at(0);
+    int offset       = 0;
+
+    // Seek to mdat
+    if (moof_.GetTRAF().at(0).GetTFHD().IsBaseDataOffSetAvailable())
+    {
+      std::cout << "TFHD base data off set not handled" << std::endl;
+    }
+
+    if (trun.IsBaseDataOffSetAvailable())
+    {
+      offset = static_cast<int>(trun.GetBaseDataOffset());
+    }
+
+    ntbytes_.SeekBeg();
+    ntbytes_.SeekForward(offset);
+    const uint8_t* basedata = ntbytes_.GetCurrRawPtr();
+
+    // Separate frames
+    for (uint32_t i = 0; i < trun.GetSampleCount(); i++)
+    {
+      std::pair<const uint8_t*, uint32_t> sample;
+
+      sample.first  = basedata;
+      sample.second = trun.GetSampleSize().at(i);
+      basedata += sample.second;
+      samples_.push_back(sample);
+    }
+
+    totalsample_           = static_cast<int>(trun.GetSampleCount());
+    nextavailablesampleid_ = 0;
+  }
+
+ private:
+  int totalsample_           = 0;
+  int nextavailablesampleid_ = 0;
   MOOF moof_;
-  std::unique_ptr<uint8_t* []> samples_;
-  std::unique_ptr<uint32_t[]> samplesizes_;
+  std::vector<std::pair<const uint8_t*, uint32_t>> samples_;
   NetworkBytes ntbytes_;
 };
 
@@ -625,7 +867,18 @@ int main(int argc, char** argv)
   buffer = std::unique_ptr<uint8_t[]>(new uint8_t[buffersize]);
   ifs.read(reinterpret_cast<char*>(buffer.get()), buffersize);
   parser.Parse(buffer, buffersize);
-
   ifs.close();
+
+  for (int i = 0; i < parser.GetTotalSample(); i++)
+  {
+    const uint8_t* ptr;
+    int size;
+    if (!parser.GetNextFrame(ptr, size))
+    {
+      std::cout << "Get Frame failed" << std::endl;
+      return false;
+    }
+  }
+
   return 0;
 }
