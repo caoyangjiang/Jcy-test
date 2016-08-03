@@ -18,7 +18,7 @@ class NetworkBytes
   {
     if ((length <= 0) || (bytes == nullptr)) return false;
 
-    bytes_   = std::move(bytes);
+    ntbytes  = std::move(bytes);
     length_  = length;
     readpos_ = 0;
     return true;
@@ -33,7 +33,7 @@ class NetworkBytes
   {
     if (length_ < (readpos_ + 1)) return false;
 
-    val = bytes_[readpos_];
+    val = ntbytes[readpos_];
     readpos_++;
 
     return true;
@@ -45,9 +45,9 @@ class NetworkBytes
 
     if (length_ < (readpos_ + 2)) return false;
 
-    pos[1] = static_cast<uint16_t>(bytes_[readpos_]);
+    pos[1] = static_cast<uint16_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[0] = static_cast<uint16_t>(bytes_[readpos_]);
+    pos[0] = static_cast<uint16_t>(ntbytes[readpos_]);
     readpos_++;
 
     val = (pos[1] << 8) | pos[0];
@@ -60,11 +60,11 @@ class NetworkBytes
 
     if (length_ < (readpos_ + 3)) return false;
 
-    pos[2] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[2] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[1] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[1] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[0] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[0] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
 
     val = (pos[2] << 16) | (pos[1] << 8) | pos[0];
@@ -77,13 +77,13 @@ class NetworkBytes
 
     if (length_ < (readpos_ + 4)) return false;
 
-    pos[3] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[3] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[2] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[2] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[1] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[1] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[0] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[0] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
 
     val = (pos[3] << 24) | (pos[2] << 16) | (pos[1] << 8) | pos[0];
@@ -96,21 +96,21 @@ class NetworkBytes
 
     if (length_ < (readpos_ + 8)) return false;
 
-    pos[7] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[7] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[6] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[6] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[5] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[5] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[4] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[4] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[3] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[3] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[2] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[2] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[1] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[1] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
-    pos[0] = static_cast<uint32_t>(bytes_[readpos_]);
+    pos[0] = static_cast<uint32_t>(ntbytes[readpos_]);
     readpos_++;
 
     val = (pos[7] << 56) | (pos[6] << 48) | (pos[5] << 40) | (pos[4] << 32) |
@@ -120,12 +120,93 @@ class NetworkBytes
   }
 
  private:
-  std::unique_ptr<uint8_t[]> bytes_;
+  std::unique_ptr<uint8_t[]> ntbytes;
   int length_  = 0;
   int readpos_ = 0;
 };
 
-class SegmentIndexBox
+/**
+ * @brief   Box defined in (ISO/IEC 14496-12:2012 Section 4.2 Object Structure)
+ */
+class Box
+{
+ public:
+  Box()
+  {
+  }
+
+  ~Box()
+  {
+  }
+
+  int Parse(NetworkBytes& ntbytes)
+  {
+    ntbytes.ReadUInt32(size_);
+    ntbytes.ReadUInt32(boxtype_);
+    if (size_ == 1)
+    {
+      std::cout << "Large size is not handled." << std::endl;
+      return -1;
+    }
+
+    return 8;
+  }
+
+  uint32_t GetSize()
+  {
+    return size_;
+  }
+
+  uint32_t GetType()
+  {
+    return boxtype_;
+  }
+
+ protected:
+  uint32_t size_    = 0;
+  uint32_t boxtype_ = 0;
+};
+
+/**
+ * @brief    Box defined in (ISO/IEC 14496-12:2012 Section 4.2 Object Structure)
+ */
+class FullBox : protected Box
+{
+ public:
+  FullBox()
+  {
+  }
+  ~FullBox()
+  {
+  }
+
+  int Parse(NetworkBytes& ntbytes)
+  {
+    int sz = Box::Parse(ntbytes);
+    ntbytes.ReadUInt8(version_);
+    ntbytes.ReadUInt24(flags_);
+    return sz + 4;
+  }
+
+  uint8_t GetVersion() const
+  {
+    return version_;
+  }
+
+  uint32_t GetFlags() const
+  {
+    return flags_;
+  }
+
+ protected:
+  uint8_t version_ = 0;
+  uint32_t flags_  = 0;
+};
+
+/**
+ * @brief    SegmentIndexBox (ISO/IEC 14496-12:2012 Section 8.16.3.2 Syntax)
+ */
+class SegmentIndexBox : protected FullBox
 {
  public:
   class Reference
@@ -147,51 +228,41 @@ class SegmentIndexBox
   {
   }
 
-  bool Parse(std::unique_ptr<uint8_t[]>& bytes, size_t size)
+  bool Parse(NetworkBytes& ntbytes)
   {
-    if (!bytes_.Load(bytes, size)) return false;
-
     // Parse Box, FullBox
-    bytes_.ReadUInt32(size_);
-    bytes_.ReadUInt32(type_);
-
-    if (size_ != size)
-    {
-      std::cout << "[ERROR]: Wrong size " << size_ << ", expect " << size
-                << std::endl;
-      return false;
-    }
-
-    if (type_ != 0x73696478)
-    {
-      std::cout << "[ERROR]: Wrong box type " << std::endl;
-      return false;
-    }
-
-    bytes_.ReadUInt8(version_);
-    bytes_.ReadUInt24(flags_);
+    int usedbyte = FullBox::Parse(ntbytes);
 
     // Parse Segment Index Box
-    bytes_.ReadUInt32(referenceid_);
-    bytes_.ReadUInt32(timescale);
+    ntbytes.ReadUInt32(referenceid_);
+    usedbyte += 4;
+    ntbytes.ReadUInt32(timescale);
+    usedbyte += 4;
 
     if (version_ == 0)
     {
       std::array<uint32_t, 2> tmp;
 
-      bytes_.ReadUInt32(tmp[0]);
-      bytes_.ReadUInt32(tmp[1]);
+      ntbytes.ReadUInt32(tmp[0]);
+      ntbytes.ReadUInt32(tmp[1]);
       earliestpresentationtime_ = static_cast<uint64_t>(tmp[0]);
-      firstoffset_              = static_cast<uint64_t>(tmp[1]);
+      usedbyte += 4;
+      firstoffset_ = static_cast<uint64_t>(tmp[1]);
+      usedbyte += 4;
     }
     else
     {
-      bytes_.ReadUInt64(earliestpresentationtime_);
-      bytes_.ReadUInt64(firstoffset_);
+      ntbytes.ReadUInt64(earliestpresentationtime_);
+      usedbyte += 8;
+      ntbytes.ReadUInt64(firstoffset_);
+      usedbyte += 8;
     }
 
-    bytes_.ReadUInt16(reserved_);
-    bytes_.ReadUInt16(referencecount_);
+    ntbytes.ReadUInt16(reserved_);
+    usedbyte += 2;
+    ntbytes.ReadUInt16(referencecount_);
+    usedbyte += 2;
+
     reference_ = std::unique_ptr<Reference[]>(new Reference[referencecount_]);
 
     for (uint16_t i = 0; i < referencecount_; i++)
@@ -199,9 +270,10 @@ class SegmentIndexBox
       Reference& ref = reference_[i];
       std::array<uint32_t, 3> tmp;
 
-      bytes_.ReadUInt32(tmp[0]);
-      bytes_.ReadUInt32(tmp[1]);
-      bytes_.ReadUInt32(tmp[2]);
+      ntbytes.ReadUInt32(tmp[0]);
+      ntbytes.ReadUInt32(tmp[1]);
+      ntbytes.ReadUInt32(tmp[2]);
+      usedbyte += 12;
 
       ref.referencetype_      = tmp[0] >> 31;
       ref.referencedsize_     = tmp[0] & 0x7FFFFFFF;
@@ -211,40 +283,39 @@ class SegmentIndexBox
       ref.SAPdeltatime_ = tmp[2] & 0x0FFFFFFF;
     }
 
-    std::cout << size << " " << bytes_.NumOfRemainingBytes() << std::endl;
-
-    uint32_t totalsize = 0;
-    std::array<int, 2> count = {0, 0};
-    for (uint16_t i = 0; i < referencecount_; i++)
+    if (usedbyte != static_cast<int>(size_))
     {
-      if (reference_[i].referencetype_ == 0)
-        count[0]++;
-      else
-        count[1]++;
-
-      std::cout << reference_[i].startswithSAP_ << " "
-                << static_cast<uint32_t>(reference_[i].SAPtype_) << std::endl;
-      std::cout << reference_[i].referencedsize_ << std::endl;
-      totalsize += reference_[i].referencedsize_;
+      std::cout << "Parsing Segment Index failed" << usedbyte << size_
+                << std::endl;
+      return false;
     }
 
-    std::cout << count[0] << " " << count[1] << std::endl;
-    std::cout << totalsize << std::endl;
+    // uint32_t totalsize = 0;
+    // std::array<int, 2> count = {0, 0};
+    // for (uint16_t i = 0; i < referencecount_; i++)
+    // {
+    //   if (reference_[i].referencetype_ == 0)
+    //     count[0]++;
+    //   else
+    //     count[1]++;
+
+    //   std::cout << reference_[i].startswithSAP_ << " "
+    //             << static_cast<uint32_t>(reference_[i].SAPtype_) <<
+    //             std::endl;
+    //   std::cout << reference_[i].referencedsize_ << std::endl;
+    //   totalsize += reference_[i].referencedsize_;
+    // }
+
+    // std::cout << count[0] << " " << count[1] << std::endl;
+    // std::cout << totalsize << std::endl;
     return true;
   }
 
+  static const uint32_t TYPE_ = 0x73696478;
+
  private:
-  NetworkBytes bytes_;
+  NetworkBytes ntbytes;
 
-  // Box fields (ISO/IEC 14496-12:2012 Section 4.2 Object Structure)
-  uint32_t size_ = 0;
-  uint32_t type_ = 0;
-
-  // FullBox fields
-  uint8_t version_ = 0;
-  uint32_t flags_  = 0;
-
-  // SegmentIndexBox (ISO/IEC 14496-12:2012 Section 8.16.3.2 Syntax)
   uint32_t referenceid_ = 0;
   uint32_t timescale    = 0;
   uint64_t earliestpresentationtime_;
@@ -259,6 +330,7 @@ int main(int argc, char** argv)
   std::unique_ptr<uint8_t[]> bytes;
   size_t filesize;
   SegmentIndexBox sidx;
+  NetworkBytes ntbytes;
 
   ifs.seekg(0, ifs.end);
   filesize = ifs.tellg();
@@ -266,8 +338,9 @@ int main(int argc, char** argv)
 
   bytes = std::unique_ptr<uint8_t[]>(new uint8_t[filesize]);
   ifs.read(reinterpret_cast<char*>(bytes.get()), filesize);
+  ntbytes.Load(bytes, filesize);
 
-  if (!sidx.Parse(bytes, filesize))
+  if (!sidx.Parse(ntbytes))
   {
     std::cout << "Parse failed." << std::endl;
     return false;
