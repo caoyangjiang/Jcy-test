@@ -3,7 +3,6 @@ project(SimpleNvEncode)
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/NvEncode.cpp
-${PROJECT_SOURCE_DIR}/src/nvEncodeAPI.h
 )
 
 find_package( CUDA REQUIRED )
