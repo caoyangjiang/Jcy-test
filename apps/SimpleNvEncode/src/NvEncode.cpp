@@ -78,7 +78,7 @@ NVENCSTATUS InitCuda(uint32_t deviceID)
   return NV_ENC_SUCCESS;
 }
 
-int main()
+int main(int argc, char** argv)
 {
   NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS sessionparam;
   NV_ENC_INITIALIZE_PARAMS encinitparam;
@@ -93,6 +93,11 @@ int main()
 
   NV_ENCODE_API_FUNCTION_LIST encodeAPI;  // = new NV_ENCODE_API_FUNCTION_LIST;
 
+  if (argc < 2)
+  {
+    std::cout << "Not enought argument" << std::endl;
+    return 1;
+  }
   // Init cuda context and device
   InitCuda(0);
 
@@ -149,7 +154,7 @@ int main()
   // Set encoder configurations
   memcpy(&encodecfg, &presetcfg, sizeof(NV_ENC_CONFIG));
   encodecfg.gopLength                    = NVENC_INFINITE_GOPLENGTH;
-  encodecfg.frameIntervalP               = 2;  // IPP
+  encodecfg.frameIntervalP               = 1;  // IPP
   encodecfg.frameFieldMode               = NV_ENC_PARAMS_FRAME_FIELD_MODE_FRAME;
   encodecfg.rcParams.rateControlMode     = NV_ENC_PARAMS_RC_CONSTQP;
   encodecfg.rcParams.constQP.qpInterP    = 32;
@@ -210,7 +215,7 @@ int main()
     std::cout << "nvEncLockInputBuffer failed" << std::endl;
     return 1;
   }
-  std::ifstream fs("sample_2048x4096_YUV420.yuv",
+  std::ifstream fs(argv[1] /*"sample_2048x4096_YUV420.yuv"*/,
                    std::ifstream::in | std::ifstream::binary);
   fs.read(reinterpret_cast<char*>(inputbufferlocker.bufferDataPtr),
           12582912);  // 2048*4096*1.5
@@ -256,7 +261,41 @@ int main()
 
   std::cout << "Encoded size: " << outputbufferlocker.bitstreamSizeInBytes
             << std::endl;
-  std::ofstream ofs("sample.h264", std::ofstream::out | std::ofstream::binary);
+  std::ofstream ofs("sample0.h264", std::ofstream::out | std::ofstream::binary);
+  ofs.write(
+      reinterpret_cast<const char*>(outputbufferlocker.bitstreamBufferPtr),
+      outputbufferlocker.bitstreamSizeInBytes);
+  ofs.close();
+
+  if ((nvstatus = encodeAPI.nvEncUnlockBitstream(encoder, outputbuffer)) !=
+      NV_ENC_SUCCESS)
+  {
+    std::cout << "nvEncUnlockBitstream failed" << std::endl;
+    return 1;
+  }
+
+  // Encode second frame
+  if ((nvstatus = encodeAPI.nvEncEncodePicture(encoder, &encodepicparam)) !=
+      NV_ENC_SUCCESS)
+  {
+    std::cout << "nvEncEncodePicture failed" << std::endl;
+    return 1;
+  }
+
+  // Retrieve second encoded frame
+  std::memset(&outputbufferlocker, 0, sizeof(NV_ENC_LOCK_BITSTREAM));
+  outputbufferlocker.version         = NV_ENC_LOCK_BITSTREAM_VER;
+  outputbufferlocker.outputBitstream = outputbuffer;
+  if ((nvstatus = encodeAPI.nvEncLockBitstream(encoder, &outputbufferlocker)) !=
+      NV_ENC_SUCCESS)
+  {
+    std::cout << "nvEncLockBitstream failed " << nvstatus << std::endl;
+    return 1;
+  }
+
+  std::cout << "Encoded size: " << outputbufferlocker.bitstreamSizeInBytes
+            << std::endl;
+  ofs.open("sample1.h264", std::ofstream::out | std::ofstream::binary);
   ofs.write(
       reinterpret_cast<const char*>(outputbufferlocker.bitstreamBufferPtr),
       outputbufferlocker.bitstreamSizeInBytes);
