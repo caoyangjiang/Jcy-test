@@ -9,6 +9,7 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/bind.hpp>
+#include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -26,6 +27,7 @@ class RenderClient
       : socket_(io_service)
   {
     boost::asio::connect(socket_, endpoint_iterator);
+    socket_.set_option(tcp::no_delay(true));
     Start();
   }
 
@@ -34,8 +36,11 @@ class RenderClient
     // TODO(cjiang): Initialize graphic rendering
     // TODO(cjiang): Initialize decoder.
     buffer_ = std::unique_ptr<uint8_t[]>(new uint8_t[4 * 1024 * 1024]);
+    std::chrono::system_clock::time_point beg, end;
+    std::chrono::duration<double, std::milli> dur;
 
-    for (;;)
+    beg = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 900; i++)
     {
       int next;
       // TODO(cjiang): Get head position from headset and fill data_ and msglen
@@ -46,6 +51,10 @@ class RenderClient
       //
       // std::cin >> next;
     }
+    end = std::chrono::high_resolution_clock::now();
+    dur = end - beg;
+
+    std::cout << "FPS: " << 900.0 * 1000.0 / dur.count() << std::endl;
   }
 
  private:

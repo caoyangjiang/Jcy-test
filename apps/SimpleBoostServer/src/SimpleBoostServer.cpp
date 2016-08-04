@@ -28,7 +28,7 @@ class RenderEngine
   {
     data_ = std::unique_ptr<uint8_t[]>(new uint8_t[4 * 1024 * 1024]);
 
-    int size = 30000;
+    int size = 3000000;
     std::unique_ptr<uint8_t[]> frame(new uint8_t[size]);
 
     // TODO(cjiang): Initialize graphic rendering
@@ -113,6 +113,7 @@ class RenderServer
         io_service_.notify_fork(boost::asio::io_service::fork_child);
         acceptor_.close();
         signal_.cancel();
+        socket_.set_option(tcp::no_delay(true));
 
         std::make_shared<RenderEngine>(std::move(socket_))->Start();
       }
