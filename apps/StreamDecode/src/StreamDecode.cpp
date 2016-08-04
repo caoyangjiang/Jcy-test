@@ -114,6 +114,8 @@ class StreamDecode
       }
     }
 
+    std::cout << frame_->linesize[0] << " " << frame_->linesize[1] << " "
+              << frame_->linesize[2] << std::endl;
     data[0] = frame_->data[0];
     data[1] = frame_->data[1];
     data[2] = frame_->data[2];

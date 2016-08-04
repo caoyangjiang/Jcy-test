@@ -9,6 +9,7 @@
 #include <boost/asio/write.hpp>
 #include <boost/bind.hpp>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <memory>
 
@@ -27,9 +28,18 @@ class RenderEngine
   void Start()
   {
     data_ = std::unique_ptr<uint8_t[]>(new uint8_t[4 * 1024 * 1024]);
+    size_t filesize;
+    std::unique_ptr<uint8_t[]> frame;
 
-    int size = 3000000;
-    std::unique_ptr<uint8_t[]> frame(new uint8_t[size]);
+    std::ifstream fs("/home/hypevr/Desktop/IFrameBS.h264",
+                     std::ifstream::in | std::ifstream::binary);
+    fs.seekg(0, fs.end);
+    filesize = fs.tellg();
+    fs.seekg(0, fs.beg);
+
+    frame = std::unique_ptr<uint8_t[]>(new uint8_t[filesize]);
+    fs.read(reinterpret_cast<char*>(frame.get()), filesize);
+    fs.close();
 
     // TODO(cjiang): Initialize graphic rendering
     // TODO(cjiang): Initialize encoder.
@@ -39,7 +49,7 @@ class RenderEngine
       // TODO(cjiang): Set head position for graphic render engine
       // TODO(cjiang): Get rendered frame
       // TODO(cjiang): Encoded rendered frame
-      SendRenderedFrame(frame.get(), size);
+      SendRenderedFrame(frame.get(), filesize);
     }
   }
 
