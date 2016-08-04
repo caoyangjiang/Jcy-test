@@ -28,7 +28,7 @@ class RenderEngine
   {
     data_ = std::unique_ptr<uint8_t[]>(new uint8_t[4 * 1024 * 1024]);
 
-    int size = 2048 * 1024 * 1.5;
+    int size = 30000;
     std::unique_ptr<uint8_t[]> frame(new uint8_t[size]);
 
     // TODO(cjiang): Initialize graphic rendering
@@ -48,12 +48,15 @@ class RenderEngine
   {
     boost::asio::read(socket_, boost::asio::buffer(&msglen_, kMSGLENGTHSIZE));
     boost::asio::read(socket_, boost::asio::buffer(data_.get(), msglen_));
+    // std::cout << "Server read headset position size " << msglen_ <<
+    // std::endl;
   }
 
   void SendRenderedFrame(uint8_t* frame, uint32_t size)
   {
     boost::asio::write(socket_, boost::asio::buffer(&size, kMSGLENGTHSIZE));
     boost::asio::write(socket_, boost::asio::buffer(frame, size));
+    // std::cout << "Server send bitstream: " << size << std::endl;
   }
 
  private:
