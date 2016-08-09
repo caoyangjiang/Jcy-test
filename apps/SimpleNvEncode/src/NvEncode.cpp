@@ -126,11 +126,11 @@ int main(int argc, char** argv)
   // Set encoder initialization parameters
   encinitparam.version           = NV_ENC_INITIALIZE_PARAMS_VER;
   encinitparam.encodeGUID        = NV_ENC_CODEC_H264_GUID;
-  encinitparam.presetGUID        = NV_ENC_PRESET_LOW_LATENCY_HQ_GUID;
-  encinitparam.encodeWidth       = 2048;
-  encinitparam.encodeHeight      = 4096;
-  encinitparam.darWidth          = 2048;
-  encinitparam.darHeight         = 4096;
+  encinitparam.presetGUID        = NV_ENC_PRESET_LOW_LATENCY_HP_GUID;
+  encinitparam.encodeWidth       = 2560;
+  encinitparam.encodeHeight      = 1600;
+  encinitparam.darWidth          = 2560;
+  encinitparam.darHeight         = 1600;
   encinitparam.maxEncodeWidth    = 0;
   encinitparam.maxEncodeHeight   = 0;
   encinitparam.frameRateNum      = 90;
@@ -153,17 +153,22 @@ int main(int argc, char** argv)
 
   // Set encoder configurations
   memcpy(&encodecfg, &presetcfg, sizeof(NV_ENC_CONFIG));
-  encodecfg.gopLength                    = NVENC_INFINITE_GOPLENGTH;
+  encodecfg.gopLength                    = 8;  // NVENC_INFINITE_GOPLENGTH;
   encodecfg.frameIntervalP               = 1;  // IPP
   encodecfg.frameFieldMode               = NV_ENC_PARAMS_FRAME_FIELD_MODE_FRAME;
   encodecfg.rcParams.rateControlMode     = NV_ENC_PARAMS_RC_CONSTQP;
   encodecfg.rcParams.constQP.qpInterP    = 32;
   encodecfg.rcParams.constQP.qpIntra     = 32;
   encodecfg.rcParams.initialRCQP.qpIntra = 24;
-  encodecfg.encodeCodecConfig.h264Config.maxNumRefFrames = 16;
-  encodecfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;  // YUV420
-  encodecfg.encodeCodecConfig.h264Config.disableDeblockingFilterIDC = 0;
+  encodecfg.encodeCodecConfig.h264Config.maxNumRefFrames     = 16;
+  encodecfg.encodeCodecConfig.hevcConfig.chromaFormatIDC     = 1;  // YUV420
+  encodecfg.encodeCodecConfig.hevcConfig.pixelBitDepthMinus8 = 0;  // 8 bit
+  encodecfg.encodeCodecConfig.hevcConfig.maxCUSize =
+      NV_ENC_HEVC_CUSIZE_64x64;  // 8 bit
+  encodecfg.encodeCodecConfig.hevcConfig.maxCUSize =
+      NV_ENC_HEVC_CUSIZE_64x64;  // 8 bit
 
+  encodecfg.encodeCodecConfig.h264Config.disableDeblockingFilterIDC = 0;
   // Initialize encoder
   encodeAPI.nvEncInitializeEncoder(encoder, &encinitparam);
   if (nvstatus != NV_ENC_SUCCESS)
@@ -176,10 +181,10 @@ int main(int argc, char** argv)
   NV_ENC_CREATE_INPUT_BUFFER inputbufferparam;
   std::memset(&inputbufferparam, 0, sizeof(NV_ENC_CREATE_INPUT_BUFFER));
   inputbufferparam.version    = NV_ENC_CREATE_INPUT_BUFFER_VER;
-  inputbufferparam.width      = 2048;
-  inputbufferparam.height     = 4096;
+  inputbufferparam.width      = 2560;
+  inputbufferparam.height     = 1600;
   inputbufferparam.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
-  inputbufferparam.bufferFmt  = NV_ENC_BUFFER_FORMAT_IYUV;  // Is this yuv420?
+  inputbufferparam.bufferFmt  = NV_ENC_BUFFER_FORMAT_NV12;  // Is this yuv420?
 
   nvstatus = encodeAPI.nvEncCreateInputBuffer(encoder, &inputbufferparam);
   if (nvstatus != NV_ENC_SUCCESS)
@@ -215,10 +220,10 @@ int main(int argc, char** argv)
     std::cout << "nvEncLockInputBuffer failed" << std::endl;
     return 1;
   }
-  std::ifstream fs(argv[1] /*"sample_2048x4096_YUV420.yuv"*/,
+  std::ifstream fs(argv[1] /*"sample_2560x1600_YUV420.yuv"*/,
                    std::ifstream::in | std::ifstream::binary);
   fs.read(reinterpret_cast<char*>(inputbufferlocker.bufferDataPtr),
-          12582912);  // 2048*4096*1.5
+          2560 * 1600 * 3 / 2);  // 2560*1600*1.5
   fs.close();
   if ((nvstatus = encodeAPI.nvEncUnlockInputBuffer(encoder, inputbuffer)) !=
       NV_ENC_SUCCESS)
@@ -230,12 +235,12 @@ int main(int argc, char** argv)
   // Prepare picture for encoding
   std::memset(&encodepicparam, 0, sizeof(NV_ENC_PIC_PARAMS));
   encodepicparam.version         = NV_ENC_PIC_PARAMS_VER;
-  encodepicparam.inputWidth      = 2048;
-  encodepicparam.inputHeight     = 4096;
-  encodepicparam.inputPitch      = 2048;
+  encodepicparam.inputWidth      = 2560;
+  encodepicparam.inputHeight     = 1600;
+  encodepicparam.inputPitch      = 2560;
   encodepicparam.inputBuffer     = inputbuffer;
   encodepicparam.outputBitstream = outputbuffer;
-  encodepicparam.bufferFmt       = NV_ENC_BUFFER_FORMAT_IYUV;
+  encodepicparam.bufferFmt       = NV_ENC_BUFFER_FORMAT_NV12;
   encodepicparam.pictureStruct   = NV_ENC_PIC_STRUCT_FRAME;
   encodepicparam.inputTimeStamp  = 0;
 
