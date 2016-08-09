@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <string>
 
 CUcontext devctx;
 CUvideoctxlock ctxlock;
@@ -82,7 +83,40 @@ static int CUDAAPI DecodeFrame(void* pUserData, CUVIDPICPARAMS* pPicParams)
 static int CUDAAPI HandlePictureDisplay(void* pUserData,
                                         CUVIDPARSERDISPINFO* pPicParams)
 {
-  std::cout << "Handle Picture Display" << std::endl;
+  CUvideodecoder videodecoder = reinterpret_cast<CUvideodecoder>(pUserData);
+  CUdeviceptr mappedframe     = 0;
+  unsigned int ndecodedpitch;
+  CUVIDPROCPARAMS vprocparam;
+
+  vprocparam.progressive_frame = pPicParams->progressive_frame;
+  vprocparam.top_field_first   = pPicParams->top_field_first;
+  vprocparam.unpaired_field    = (pPicParams->progressive_frame == 1 ||
+                               pPicParams->repeat_first_field <= 1);
+  vprocparam.second_field = 0;
+
+  /* Map video frame to CUDA memory */
+  if (cuvidMapVideoFrame(videodecoder,
+                         pPicParams->picture_index,
+                         &mappedframe,
+                         &ndecodedpitch,
+                         &vprocparam) != CUDA_SUCCESS)
+    std::cout << "cuvidMapVideoFrame failed" << std::endl;
+
+  {
+    CCtxAutoLock lck(ctxlock);
+    uint8_t* yuv;
+    cuMemAllocHost(reinterpret_cast<void**>(&yuv), (2560 * 1600 * 3 / 2));
+    std::cout << "pitch " << ndecodedpitch << std::endl;
+    cuMemcpyDtoHAsync(yuv, mappedframe, (ndecodedpitch * 1600 * 3 / 2), 0);
+    std::string filename = "output_" + std::to_string(decodedframe) + ".NV12";
+    std::ofstream ofs(filename, std::ofstream::out | std::ofstream::binary);
+    ofs.write(reinterpret_cast<char*>(yuv), ndecodedpitch * 1600 * 3 / 2);
+    ofs.close();
+    cuMemFreeHost(reinterpret_cast<void*>(yuv));
+  }
+
+  if (cuvidUnmapVideoFrame(videodecoder, mappedframe) != CUDA_SUCCESS)
+    std::cout << "cuvidUnmapVideoFrame failed" << std::endl;
   decodedframe++;
   return 1;
 }
@@ -97,6 +131,7 @@ int main(int argc, char** argv)
   CUvideosource videosource = nullptr;
   CUVIDSOURCEPARAMS vsparam;  // video source parameters
   CUVIDSOURCEDATAPACKET pPacket;
+  std::ifstream bs;
 
   CUresult cuResult;
   CUdevice device;
@@ -135,13 +170,13 @@ int main(int argc, char** argv)
     cuviddecodecreateinfo.CodecType           = cudaVideoCodec_H264;
     cuviddecodecreateinfo.ulWidth             = 2560;
     cuviddecodecreateinfo.ulHeight            = 1600;
-    cuviddecodecreateinfo.ulNumDecodeSurfaces = 2;
+    cuviddecodecreateinfo.ulNumDecodeSurfaces = 4;
     cuviddecodecreateinfo.ChromaFormat        = cudaVideoChromaFormat_420;
     cuviddecodecreateinfo.OutputFormat        = cudaVideoSurfaceFormat_NV12;
     cuviddecodecreateinfo.DeinterlaceMode     = cudaVideoDeinterlaceMode_Weave;
     cuviddecodecreateinfo.ulTargetWidth       = 2560;
     cuviddecodecreateinfo.ulTargetHeight      = 1600;
-    cuviddecodecreateinfo.ulNumOutputSurfaces = 2;
+    cuviddecodecreateinfo.ulNumOutputSurfaces = 4;
     cuviddecodecreateinfo.ulCreationFlags     = cudaVideoCreate_PreferCUVID;
     cuviddecodecreateinfo.vidLock             = ctxlock;
 
@@ -164,35 +199,35 @@ int main(int argc, char** argv)
     {
       std::cout << "cuvidCreateVideoParser failed" << std::endl;
     }
-
-    std::ifstream bs(argv[1], std::ifstream::in | std::ifstream::binary);
-    bs.seekg(0, bs.end);
-    size = bs.tellg();
-    bs.seekg(0, bs.beg);
-    buffer = std::unique_ptr<uint8_t[]>(new uint8_t[size]);
-    bs.read(reinterpret_cast<char*>(buffer.get()), size);
-    bs.close();
-    bufferptr = buffer.get();
-
-    pPacket.flags        = 1;
-    pPacket.payload_size = size;
-    if (pPacket.payload_size > 0)
-      pPacket.payload = reinterpret_cast<const unsigned char*>(bufferptr);
-    else
-    {
-      pPacket.payload = nullptr;
-      pPacket.flags   = 1;
-    }
-
-    pPacket.timestamp = 0;
-    size -= pPacket.payload_size;
-    bufferptr += pPacket.payload_size;
-
-    std::cout << pPacket.flags << std::endl;
-    std::cout << pPacket.payload_size << std::endl;
-    std::cout << reinterpret_cast<uint64_t>(pPacket.payload) << std::endl;
-    std::cout << pPacket.timestamp << std::endl;
   }
+
+  // First frame
+  bs.open(argv[1], std::ifstream::in | std::ifstream::binary);
+  bs.seekg(0, bs.end);
+  size = bs.tellg();
+  bs.seekg(0, bs.beg);
+  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[size]);
+  bs.read(reinterpret_cast<char*>(buffer.get()), size);
+  bs.close();
+  bufferptr = buffer.get();
+
+  pPacket.flags        = 0;
+  pPacket.payload_size = size;
+  if (pPacket.payload_size > 0)
+    pPacket.payload = reinterpret_cast<const unsigned char*>(bufferptr);
+  else
+  {
+    pPacket.payload = nullptr;
+    pPacket.flags   = 1;
+  }
+  pPacket.timestamp = 0;
+  size -= pPacket.payload_size;
+  bufferptr += pPacket.payload_size;
+
+  std::cout << pPacket.flags << std::endl;
+  std::cout << pPacket.payload_size << std::endl;
+  std::cout << reinterpret_cast<uint64_t>(pPacket.payload) << std::endl;
+  std::cout << pPacket.timestamp << std::endl;
 
   if (cuvidParseVideoData(videoparser, &pPacket) != CUDA_SUCCESS)
   {
@@ -200,10 +235,71 @@ int main(int argc, char** argv)
     return 0;
   }
 
-  while (decodedframe == 0)
+  // Second frame
+  bs.open(argv[2], std::ifstream::in | std::ifstream::binary);
+  bs.seekg(0, bs.end);
+  size = bs.tellg();
+  bs.seekg(0, bs.beg);
+  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[size]);
+  bs.read(reinterpret_cast<char*>(buffer.get()), size);
+  bs.close();
+  bufferptr = buffer.get();
+
+  pPacket.flags        = 1;
+  pPacket.payload_size = size;
+  if (pPacket.payload_size > 0)
+    pPacket.payload = reinterpret_cast<const unsigned char*>(bufferptr);
+  else
   {
+    pPacket.payload = nullptr;
+    pPacket.flags   = 1;
+  }
+  pPacket.timestamp = 100;
+  size -= pPacket.payload_size;
+  bufferptr += pPacket.payload_size;
+
+  std::cout << pPacket.flags << std::endl;
+  std::cout << pPacket.payload_size << std::endl;
+  std::cout << reinterpret_cast<uint64_t>(pPacket.payload) << std::endl;
+  std::cout << pPacket.timestamp << std::endl;
+
+  if (cuvidParseVideoData(videoparser, &pPacket) != CUDA_SUCCESS)
+  {
+    std::cout << "cuvidParseVideoData failed." << std::endl;
+    return 0;
   }
 
+  // Third frame
+  bs.open(argv[1], std::ifstream::in | std::ifstream::binary);
+  bs.seekg(0, bs.end);
+  size = bs.tellg();
+  bs.seekg(0, bs.beg);
+  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[size]);
+  bs.read(reinterpret_cast<char*>(buffer.get()), size);
+  bs.close();
+  bufferptr = buffer.get();
+
+  pPacket.flags        = 1;
+  pPacket.payload_size = size;
+  if (pPacket.payload_size > 0)
+    pPacket.payload = reinterpret_cast<const unsigned char*>(bufferptr);
+  else
+  {
+    pPacket.payload = nullptr;
+    pPacket.flags   = 1;
+  }
+  pPacket.timestamp = 0;
+  size -= pPacket.payload_size;
+  bufferptr += pPacket.payload_size;
+
+  if (cuvidParseVideoData(videoparser, &pPacket) != CUDA_SUCCESS)
+  {
+    std::cout << "cuvidParseVideoData failed." << std::endl;
+    return 0;
+  }
+  while (decodedframe != 3)
+  {
+  }
   if (videodecoder)
   {
     if (cuvidDestroyDecoder(videodecoder) != CUDA_SUCCESS)
