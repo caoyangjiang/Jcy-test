@@ -3,11 +3,11 @@ extern "C" {
 #include "libavformat/avformat.h"
 }
 
+#include <unistd.h>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <memory>
-
 int main()
 {
   avcodec_register_all();
@@ -20,11 +20,11 @@ int main()
   AVCodecContext* codectx;
   AVPacket pkt;
   std::ifstream ifs;
-  std::unique_ptr<uint8_t[]> buffer;
+  std::unique_ptr<uint8_t[]> buffer, buffer2;
   std::string host;
-  int filesize;
+  int filesize, filesize2;
 
-  host   = "rtp://192.168.0.72:12345";
+  host   = "rtp://192.168.0.72:5004";  // VLC must use 5004
   fmtctx = avformat_alloc_context();
   if (!fmtctx)
   {
@@ -42,13 +42,13 @@ int main()
     return -1;
   }
 
-  codec = avcodec_find_encoder(AV_CODEC_ID_H264);
+  codec = avcodec_find_decoder(AV_CODEC_ID_H264);
   if (!codec)
   {
     std::cout << "avcodec_find_encoder failed" << std::endl;
     return -1;
   }
-  video_st = avformat_new_stream(fmtctx, codec);
+  video_st = avformat_new_stream(fmtctx, NULL);
   codectx  = video_st->codec;
   avcodec_get_context_defaults3(codectx, codec);
   codectx->codec_id = AV_CODEC_ID_H264;
@@ -76,10 +76,21 @@ int main()
   buffer = std::unique_ptr<uint8_t[]>(new uint8_t[filesize]);
   ifs.read(reinterpret_cast<char*>(buffer.get()), filesize);
   ifs.close();
+
+  ifs.open("/home/hypevr/Desktop/PFrameBS.h264",
+           std::ifstream::in | std::ifstream::binary);
+  ifs.seekg(0, ifs.end);
+  filesize2 = ifs.tellg();
+  ifs.seekg(0, ifs.beg);
+  buffer2 = std::unique_ptr<uint8_t[]>(new uint8_t[filesize2]);
+  ifs.read(reinterpret_cast<char*>(buffer2.get()), filesize2);
+  ifs.close();
+
   char sdp[2048];
   av_sdp_create(&fmtctx, 1, sdp, sizeof(sdp));
   printf("%s\n", sdp);
   fflush(stdout);
+
   while (1)
   {
     pkt.data = buffer.get();
@@ -89,6 +100,18 @@ int main()
       std::cout << "av_interleaved_write_frame failed" << std::endl;
       return -1;
     }
+
+    usleep(1000);
+
+    pkt.data = buffer2.get();
+    pkt.size = filesize2;
+    if (av_interleaved_write_frame(fmtctx, &pkt) < 0)
+    {
+      std::cout << "av_interleaved_write_frame failed" << std::endl;
+      return -1;
+    }
+
+    usleep(1000);
   }
 
   return 0;
