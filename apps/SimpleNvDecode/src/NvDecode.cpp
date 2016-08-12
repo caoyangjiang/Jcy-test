@@ -69,7 +69,10 @@ static int CUDAAPI CheckVideoSequence(void* pUserData, CUVIDEOFORMAT* pFormat)
 static int CUDAAPI DecodeFrame(void* pUserData, CUVIDPICPARAMS* pPicParams)
 {
   CUvideodecoder videodecoder = reinterpret_cast<CUvideodecoder>(pUserData);
+
   std::cout << "DecodeFrame" << std::endl;
+  std::cout << pPicParams->PicWidthInMbs * 16 << " "
+            << pPicParams->FrameHeightInMbs * 16 << std::endl;
   if (CUDA_SUCCESS != cuvidDecodePicture(videodecoder, pPicParams))
   {
     std::cout << "cuvidDecodePicture failed." << std::endl;
@@ -107,6 +110,7 @@ static int CUDAAPI HandlePictureDisplay(void* pUserData,
     uint8_t* yuv;
     cuMemAllocHost(reinterpret_cast<void**>(&yuv), (2560 * 1600 * 3 / 2));
     std::cout << "pitch " << ndecodedpitch << std::endl;
+
     cuMemcpyDtoHAsync(yuv, mappedframe, (ndecodedpitch * 1600 * 3 / 2), 0);
     std::string filename = "output_" + std::to_string(decodedframe) + ".NV12";
     std::ofstream ofs(filename, std::ofstream::out | std::ofstream::binary);
@@ -190,7 +194,7 @@ int main(int argc, char** argv)
     std::memset(&vpparam, 0, sizeof(CUVIDPARSERPARAMS));
     vpparam.CodecType              = cuviddecodecreateinfo.CodecType;
     vpparam.ulMaxNumDecodeSurfaces = cuviddecodecreateinfo.ulNumDecodeSurfaces;
-    vpparam.ulMaxDisplayDelay      = 1;
+    vpparam.ulMaxDisplayDelay      = 0;
     vpparam.pUserData              = videodecoder;
     vpparam.pfnSequenceCallback    = CheckVideoSequence;
     vpparam.pfnDecodePicture       = DecodeFrame;
@@ -206,23 +210,24 @@ int main(int argc, char** argv)
   bs.seekg(0, bs.end);
   size = bs.tellg();
   bs.seekg(0, bs.beg);
-  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[size]);
+  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[size + 10]);
   bs.read(reinterpret_cast<char*>(buffer.get()), size);
+  buffer[size]     = 0x00;
+  buffer[size + 1] = 0x00;
+  buffer[size + 2] = 0x01;
+  buffer[size + 3] = 0x09;
+  buffer[size + 4] = 0xFF;
+  buffer[size + 5] = 0x00;
+  buffer[size + 6] = 0x00;
+  buffer[size + 7] = 0x01;
+  buffer[size + 8] = 0x09;
+  buffer[size + 9] = 0xFF;
   bs.close();
   bufferptr = buffer.get();
 
   pPacket.flags        = 0;
-  pPacket.payload_size = size;
-  if (pPacket.payload_size > 0)
-    pPacket.payload = reinterpret_cast<const unsigned char*>(bufferptr);
-  else
-  {
-    pPacket.payload = nullptr;
-    pPacket.flags   = 1;
-  }
-  pPacket.timestamp = 0;
-  size -= pPacket.payload_size;
-  bufferptr += pPacket.payload_size;
+  pPacket.payload_size = size + 10;
+  pPacket.payload      = reinterpret_cast<const unsigned char*>(bufferptr);
 
   std::cout << pPacket.flags << std::endl;
   std::cout << pPacket.payload_size << std::endl;
@@ -240,24 +245,24 @@ int main(int argc, char** argv)
   bs.seekg(0, bs.end);
   size = bs.tellg();
   bs.seekg(0, bs.beg);
-  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[size]);
+  buffer           = std::unique_ptr<uint8_t[]>(new uint8_t[size + 10]);
+  buffer[size]     = 0x00;
+  buffer[size + 1] = 0x00;
+  buffer[size + 2] = 0x01;
+  buffer[size + 3] = 0x09;
+  buffer[size + 4] = 0xFF;
+  buffer[size + 5] = 0x00;
+  buffer[size + 6] = 0x00;
+  buffer[size + 7] = 0x01;
+  buffer[size + 8] = 0x09;
+  buffer[size + 9] = 0xFF;
   bs.read(reinterpret_cast<char*>(buffer.get()), size);
   bs.close();
   bufferptr = buffer.get();
 
-  pPacket.flags        = 1;
-  pPacket.payload_size = size;
-  if (pPacket.payload_size > 0)
-    pPacket.payload = reinterpret_cast<const unsigned char*>(bufferptr);
-  else
-  {
-    pPacket.payload = nullptr;
-    pPacket.flags   = 1;
-  }
-  pPacket.timestamp = 100;
-  size -= pPacket.payload_size;
-  bufferptr += pPacket.payload_size;
-
+  pPacket.flags        = 0;
+  pPacket.payload_size = size + 10;
+  pPacket.payload      = reinterpret_cast<const unsigned char*>(bufferptr);
   std::cout << pPacket.flags << std::endl;
   std::cout << pPacket.payload_size << std::endl;
   std::cout << reinterpret_cast<uint64_t>(pPacket.payload) << std::endl;
@@ -270,27 +275,28 @@ int main(int argc, char** argv)
   }
 
   // Third frame
-  bs.open(argv[1], std::ifstream::in | std::ifstream::binary);
+  bs.open(argv[3], std::ifstream::in | std::ifstream::binary);
   bs.seekg(0, bs.end);
   size = bs.tellg();
   bs.seekg(0, bs.beg);
-  buffer = std::unique_ptr<uint8_t[]>(new uint8_t[size]);
+  buffer           = std::unique_ptr<uint8_t[]>(new uint8_t[size + 10]);
+  buffer[size]     = 0x00;
+  buffer[size + 1] = 0x00;
+  buffer[size + 2] = 0x01;
+  buffer[size + 3] = 0x09;
+  buffer[size + 4] = 0xFF;
+  buffer[size + 5] = 0x00;
+  buffer[size + 6] = 0x00;
+  buffer[size + 7] = 0x01;
+  buffer[size + 8] = 0x09;
+  buffer[size + 9] = 0xFF;
   bs.read(reinterpret_cast<char*>(buffer.get()), size);
   bs.close();
   bufferptr = buffer.get();
 
-  pPacket.flags        = 1;
-  pPacket.payload_size = size;
-  if (pPacket.payload_size > 0)
-    pPacket.payload = reinterpret_cast<const unsigned char*>(bufferptr);
-  else
-  {
-    pPacket.payload = nullptr;
-    pPacket.flags   = 1;
-  }
-  pPacket.timestamp = 0;
-  size -= pPacket.payload_size;
-  bufferptr += pPacket.payload_size;
+  pPacket.flags        = 0;
+  pPacket.payload_size = size + 10;
+  pPacket.payload      = reinterpret_cast<const unsigned char*>(bufferptr);
 
   if (cuvidParseVideoData(videoparser, &pPacket) != CUDA_SUCCESS)
   {

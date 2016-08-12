@@ -174,12 +174,25 @@ int main(int argc, char **argv)
   fs.read(reinterpret_cast<char *>(bitstream.get()), filesize);
   fs.close();
 
+  if (!decoder.DecodeAFrame(bitstream.get(), filesize, yuv, width, height))
+    return 1;
+
   std::cout << "Second frame "
             << "Width: " << width << " Height: " << height << std::endl;
 
+  fs.open(argv[3], std::ifstream::in | std::ifstream::binary);
+  fs.seekg(0, fs.end);
+  filesize = fs.tellg();
+  fs.seekg(0, fs.beg);
+  fs.read(reinterpret_cast<char *>(bitstream.get()), filesize);
+  fs.close();
+
   if (!decoder.DecodeAFrame(bitstream.get(), filesize, yuv, width, height))
     return 1;
-  if (!decoder.Destroy()) return 1;
 
+  std::cout << "Third frame "
+            << "Width: " << width << " Height: " << height << std::endl;
+
+  if (!decoder.Destroy()) return 1;
   return 0;
 }

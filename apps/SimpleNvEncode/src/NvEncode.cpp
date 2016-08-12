@@ -126,7 +126,7 @@ int main(int argc, char** argv)
   // Set encoder initialization parameters
   encinitparam.version           = NV_ENC_INITIALIZE_PARAMS_VER;
   encinitparam.encodeGUID        = NV_ENC_CODEC_H264_GUID;
-  encinitparam.presetGUID        = NV_ENC_PRESET_LOW_LATENCY_HP_GUID;
+  encinitparam.presetGUID        = NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID;
   encinitparam.encodeWidth       = 2560;
   encinitparam.encodeHeight      = 1600;
   encinitparam.darWidth          = 2560;
@@ -153,22 +153,18 @@ int main(int argc, char** argv)
 
   // Set encoder configurations
   memcpy(&encodecfg, &presetcfg, sizeof(NV_ENC_CONFIG));
-  encodecfg.gopLength                    = 8;  // NVENC_INFINITE_GOPLENGTH;
+  encodecfg.gopLength                    = 3;  // NVENC_INFINITE_GOPLENGTH;
   encodecfg.frameIntervalP               = 1;  // IPP
   encodecfg.frameFieldMode               = NV_ENC_PARAMS_FRAME_FIELD_MODE_FRAME;
   encodecfg.rcParams.rateControlMode     = NV_ENC_PARAMS_RC_CONSTQP;
   encodecfg.rcParams.constQP.qpInterP    = 32;
   encodecfg.rcParams.constQP.qpIntra     = 32;
   encodecfg.rcParams.initialRCQP.qpIntra = 24;
-  encodecfg.encodeCodecConfig.h264Config.maxNumRefFrames     = 16;
-  encodecfg.encodeCodecConfig.hevcConfig.chromaFormatIDC     = 1;  // YUV420
-  encodecfg.encodeCodecConfig.hevcConfig.pixelBitDepthMinus8 = 0;  // 8 bit
-  encodecfg.encodeCodecConfig.hevcConfig.maxCUSize =
-      NV_ENC_HEVC_CUSIZE_64x64;  // 8 bit
-  encodecfg.encodeCodecConfig.hevcConfig.maxCUSize =
-      NV_ENC_HEVC_CUSIZE_64x64;  // 8 bit
-
+  encodecfg.encodeCodecConfig.h264Config.maxNumRefFrames = 16;
+  encodecfg.encodeCodecConfig.h264Config.chromaFormatIDC = 1;  // YUV420
   encodecfg.encodeCodecConfig.h264Config.disableDeblockingFilterIDC = 0;
+  encodecfg.encodeCodecConfig.h264Config.sliceMode                  = 3;
+  encodecfg.encodeCodecConfig.h264Config.sliceModeData              = 1;
   // Initialize encoder
   encodeAPI.nvEncInitializeEncoder(encoder, &encinitparam);
   if (nvstatus != NV_ENC_SUCCESS)
@@ -184,7 +180,7 @@ int main(int argc, char** argv)
   inputbufferparam.width      = 2560;
   inputbufferparam.height     = 1600;
   inputbufferparam.memoryHeap = NV_ENC_MEMORY_HEAP_SYSMEM_CACHED;
-  inputbufferparam.bufferFmt  = NV_ENC_BUFFER_FORMAT_NV12;  // Is this yuv420?
+  inputbufferparam.bufferFmt  = NV_ENC_BUFFER_FORMAT_IYUV;  // Is this yuv420?
 
   nvstatus = encodeAPI.nvEncCreateInputBuffer(encoder, &inputbufferparam);
   if (nvstatus != NV_ENC_SUCCESS)
@@ -240,7 +236,7 @@ int main(int argc, char** argv)
   encodepicparam.inputPitch      = 2560;
   encodepicparam.inputBuffer     = inputbuffer;
   encodepicparam.outputBitstream = outputbuffer;
-  encodepicparam.bufferFmt       = NV_ENC_BUFFER_FORMAT_NV12;
+  encodepicparam.bufferFmt       = NV_ENC_BUFFER_FORMAT_IYUV;
   encodepicparam.pictureStruct   = NV_ENC_PIC_STRUCT_FRAME;
   encodepicparam.inputTimeStamp  = 0;
 
@@ -280,6 +276,7 @@ int main(int argc, char** argv)
   }
 
   // Encode second frame
+  encodepicparam.inputTimeStamp = 100;
   if ((nvstatus = encodeAPI.nvEncEncodePicture(encoder, &encodepicparam)) !=
       NV_ENC_SUCCESS)
   {
@@ -313,6 +310,43 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  // Encode third frame
+  encodepicparam.inputTimeStamp = 200;
+  if ((nvstatus = encodeAPI.nvEncEncodePicture(encoder, &encodepicparam)) !=
+      NV_ENC_SUCCESS)
+  {
+    std::cout << "nvEncEncodePicture failed" << std::endl;
+    return 1;
+  }
+
+  // Retrieve second encoded frame
+  std::memset(&outputbufferlocker, 0, sizeof(NV_ENC_LOCK_BITSTREAM));
+  outputbufferlocker.version         = NV_ENC_LOCK_BITSTREAM_VER;
+  outputbufferlocker.outputBitstream = outputbuffer;
+  if ((nvstatus = encodeAPI.nvEncLockBitstream(encoder, &outputbufferlocker)) !=
+      NV_ENC_SUCCESS)
+  {
+    std::cout << "nvEncLockBitstream failed " << nvstatus << std::endl;
+    return 1;
+  }
+
+  std::cout << "Encoded size: " << outputbufferlocker.bitstreamSizeInBytes
+            << std::endl;
+  ofs.open("sample2.h264", std::ofstream::out | std::ofstream::binary);
+  ofs.write(
+      reinterpret_cast<const char*>(outputbufferlocker.bitstreamBufferPtr),
+      outputbufferlocker.bitstreamSizeInBytes);
+  ofs.close();
+
+  if ((nvstatus = encodeAPI.nvEncUnlockBitstream(encoder, outputbuffer)) !=
+      NV_ENC_SUCCESS)
+  {
+    std::cout << "nvEncUnlockInputBuffer failed" << std::endl;
+    return 1;
+  }
+  // while (1)
+  // {
+  // }
   // Destroy input buffer
   if (inputbuffer)
   {
