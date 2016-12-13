@@ -16,8 +16,7 @@ source_group("src"     FILES ${PROJECT_SRCS})
 find_package( OpenCV REQUIRED )
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-#message(hello${OpenCV_INCLUDE_DIRS})
-#include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
 

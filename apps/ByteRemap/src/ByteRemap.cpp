@@ -168,35 +168,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-
-// int main(int argc, char** argv)
-// {
-//   if (argc < 2)
-//   {
-//     std::cout << "not enough argument!" << std::endl;
-//     return -1;
-//   }
-
-//   std::ifstream infs(argv[1], std::ifstream::in | std::ifstream::binary);
-//   std::ofstream outfs(std::string(argv[1]) + "_Decrypt",
-//                       std::ofstream::out | std::ofstream::binary);
-
-//   std::unique_ptr<char[]> filebuf;
-//   size_t filesize;
-//   Cryptor cyptor;
-
-//   infs.seekg(0, infs.end);
-//   filesize = infs.tellg();
-//   infs.seekg(0, infs.beg);
-
-//   filebuf = std::unique_ptr<char[]>(new char[filesize]);
-
-//   infs.read(filebuf.get(), filesize);
-//   cyptor.Decrypt(filebuf.get(), static_cast<int>(filesize));
-//   outfs.write(filebuf.get(), filesize);
-
-//   infs.close();
-//   outfs.close();
-
-//   return 0;
-// }

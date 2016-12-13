@@ -5,7 +5,6 @@ if(MSVC)
   add_definitions("-DHVR_WINDOWS_DLL_API=__declspec\(dllimport\)")
 endif()
 
-find_package( SIMD REQUIRED )
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/AvxTest.cpp

@@ -17,7 +17,7 @@ find_package( Boost COMPONENTS system REQUIRED )
 
 message(Check ${Boost_LIBRARIES})
 include_directories(${PROJECT_SOURCE_DIR}/include)
-#include_directories(${Boost_INCLUDE_DIRS})
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
 target_link_libraries(${PROJECT_NAME} boost_system)

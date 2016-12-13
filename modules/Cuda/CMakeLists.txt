@@ -4,12 +4,15 @@ project(jcy_cuda)
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/CUDATest.cu
 ${PROJECT_SOURCE_DIR}/src/CuRotator.cu
+${PROJECT_SOURCE_DIR}/src/CudaColorSpaceCVT.cu
 )
 
 set(PROJECT_INCS
 ${PROJECT_SOURCE_DIR}/include/Jcy/Cuda/CUDAGlobal.cuh
 ${PROJECT_SOURCE_DIR}/include/Jcy/Cuda/CUDATest.cuh
 ${PROJECT_SOURCE_DIR}/include/Jcy/Cuda/CuRotator.cuh
+${PROJECT_SOURCE_DIR}/include/Jcy/Cuda/CudaColorSpaceCVT.h
+${PROJECT_SOURCE_DIR}/include/Jcy/Cuda/CudaConfig.h
 )
 
 # Separate include and src folder on Visual Studio
@@ -27,6 +30,8 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
+
 cuda_add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
 
 # Group this project into "hvr-decode/modules" in Visual Studio
