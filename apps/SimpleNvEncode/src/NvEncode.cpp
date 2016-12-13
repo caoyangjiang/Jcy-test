@@ -1,10 +1,10 @@
 
 #include <cuda.h>
+#include <nvEncodeAPI.h>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include "nvEncodeAPI.h"
 
 void* gdevice;
 CUcontext cuContextCurr;

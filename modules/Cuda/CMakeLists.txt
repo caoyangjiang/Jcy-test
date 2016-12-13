@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(jcy_cuda)
 
 set(PROJECT_SRCS
@@ -19,8 +19,6 @@ source_group("src"     FILES ${PROJECT_SRCS})
 find_package( CUDA REQUIRED )
 list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52;")
 list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50;")
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35;")
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30;")
 if(MSVC)
   string(REGEX REPLACE "/W[0-4]" "/W3" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)

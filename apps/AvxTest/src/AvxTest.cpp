@@ -1,10 +1,11 @@
 // Copyright @ 2016 Caoyang Jiang
-//
+
 #include <immintrin.h>
 #include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <memory>
+
 #define N 10000000
 
 int main()
@@ -57,9 +58,9 @@ int main()
       reg3 = _mm256_abs_epi16(reg3);
 
       p = reinterpret_cast<int16_t*>(&reg3);
-      for (int i = 0; i < 16; i++)
+      for (int k = 0; k < 16; k++)
       {
-        sum += p[i];
+        sum += p[k];
       }
       inc += 16;
     }

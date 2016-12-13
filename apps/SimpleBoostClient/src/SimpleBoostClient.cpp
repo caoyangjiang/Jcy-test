@@ -38,23 +38,29 @@ class RenderClient
     buffer_ = std::unique_ptr<uint8_t[]>(new uint8_t[4 * 1024 * 1024]);
     std::chrono::system_clock::time_point beg, end;
     std::chrono::duration<double, std::milli> dur;
-
-    beg = std::chrono::high_resolution_clock::now();
+    double total  = 0;
+    uint64_t bits = 0;
     for (int i = 0; i < 900; i++)
     {
       int next;
       // TODO(cjiang): Get head position from headset and fill data_ and msglen
       SendHeadSetPosition(reinterpret_cast<uint8_t*>(&next), 4);
+
+      beg = std::chrono::high_resolution_clock::now();
       ReadCodedBitStream();
+      end = std::chrono::high_resolution_clock::now();
+      dur = end - beg;
+      total += dur.count();
+      bits += msglen_;
+
       // TODO(cjiang): Give received bitstream to decoder
       // TODO(cjiang): decodes the frame
       //
       // std::cin >> next;
     }
-    end = std::chrono::high_resolution_clock::now();
-    dur = end - beg;
 
-    std::cout << "FPS: " << 900.0 * 1000.0 / dur.count() << std::endl;
+    std::cout << "Bit: " << bits / 900 << std::endl;
+    std::cout << "FPS: " << 900.0 * 1000.0 / total << std::endl;
   }
 
  private:

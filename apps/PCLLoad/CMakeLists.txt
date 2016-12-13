@@ -1,5 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(PCLLoad)
+
+if(MSVC)
+  add_definitions("-DHVR_WINDOWS_DLL_API=__declspec\(dllimport\)")
+endif()
+
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/PCLLoad.cpp
@@ -16,7 +21,8 @@ list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35;")
 list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30;")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PCL_INCLUDE_DIRS})
+include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
+include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
 include_directories(../../modules/PCL/include)
 
 if(MSVC)
@@ -26,7 +32,6 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11;")
 endif()
 
-message(12345${CUDA_NVCC_FLAGS})
 cuda_add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})

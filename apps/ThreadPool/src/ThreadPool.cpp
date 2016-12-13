@@ -1,8 +1,8 @@
 // Copyright @ 2016 Caoyang Jiang
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
+// #include <boost/numeric/ublas/io.hpp>
+// #include <boost/numeric/ublas/matrix.hpp>
 
-#include <unistd.h>
+// #include <unistd.h>
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -44,12 +44,12 @@ class ThreadPool
   };
 
  public:
-  ThreadPool()
-  {
-  }
-  ~ThreadPool()
-  {
-  }
+  // ThreadPool()
+  // {
+  // }
+  // ~ThreadPool()
+  // {
+  // }
 
   /**
    * @brief      Intialize thread pool parameters. All parameters must > 0.
@@ -178,9 +178,14 @@ class ThreadPool
   int threadcount_ = 0;
 };
 
-class DLTask
+struct DLTask
 {
- public:
+  // DLTask()
+  // {
+  // }
+  // ~DLTask()
+  // {
+  // }
   // Input data
   std::string myid_;
   size_t input_;
@@ -198,7 +203,7 @@ class Downloader
     DLTask* task      = reinterpret_cast<DLTask*>(data);
     task->buffersize_ = task->input_;
     std::cout << task->input_ << std::endl;
-    sleep(2);
+    // sleep(2);
     std::cout << "done" << std::endl;
   }
 };

@@ -241,7 +241,7 @@ class SegmentIndexBox : protected FullBox
 
     if (version_ == 0)
     {
-      std::array<uint32_t, 2> tmp;
+      std::array<uint32_t, 2> tmp = {0, 0};
 
       ntbytes.ReadUInt32(tmp[0]);
       ntbytes.ReadUInt32(tmp[1]);
@@ -268,7 +268,7 @@ class SegmentIndexBox : protected FullBox
     for (uint16_t i = 0; i < referencecount_; i++)
     {
       Reference& ref = reference_[i];
-      std::array<uint32_t, 3> tmp;
+      std::array<uint32_t, 3> tmp = {0, 0, 0};
 
       ntbytes.ReadUInt32(tmp[0]);
       ntbytes.ReadUInt32(tmp[1]);
@@ -314,8 +314,6 @@ class SegmentIndexBox : protected FullBox
   static const uint32_t TYPE_ = 0x73696478;
 
  private:
-  NetworkBytes ntbytes;
-
   uint32_t referenceid_ = 0;
   uint32_t timescale    = 0;
   uint64_t earliestpresentationtime_;
@@ -324,7 +322,7 @@ class SegmentIndexBox : protected FullBox
   uint16_t referencecount_;
   std::unique_ptr<Reference[]> reference_;
 };
-int main(int argc, char** argv)
+int main(int, char** argv)
 {
   std::ifstream ifs(argv[1], std::ifstream::in | std::ifstream::binary);
   std::unique_ptr<uint8_t[]> bytes;

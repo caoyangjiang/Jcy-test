@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(BufferDecoder)
+
+if(MSVC)
+  add_definitions("-DHVR_WINDOWS_DLL_API=__declspec\(dllimport\)")
+endif()
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/BufferDecoder.cpp
@@ -7,6 +11,7 @@ ${PROJECT_SOURCE_DIR}/src/BufferDecoder.cpp
 # Library for parsing Dash media presentation description
 
 find_package( FFMPEG REQUIRED )
+
 include_directories(${FFMPEG_INCLUDE_DIRS})
 
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})

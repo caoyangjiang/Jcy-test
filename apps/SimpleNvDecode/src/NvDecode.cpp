@@ -17,49 +17,42 @@ size_t size;
 int decodedframe = 0;
 uint8_t* bufferptr;
 
-static int CUDAAPI ParseVideoData(void* pUserData,
-                                  CUVIDSOURCEDATAPACKET* pPacket)
-{
-  CUvideoparser videoparser = reinterpret_cast<CUvideoparser>(pUserData);
+// static int CUDAAPI ParseVideoData(void* pUserData,
+//                                   CUVIDSOURCEDATAPACKET* pPacket)
+// {
+//   CUvideoparser videoparser = reinterpret_cast<CUvideoparser>(pUserData);
 
-  std::cout << "ParseVideoData" << std::endl;
-  pPacket->flags        = 0;
-  pPacket->payload_size = size;
-  if (pPacket->payload_size > 0)
-    pPacket->payload = reinterpret_cast<const unsigned char*>(bufferptr);
-  else
-  {
-    pPacket->payload = nullptr;
-    pPacket->flags   = 1;
-  }
+//   std::cout << "ParseVideoData" << std::endl;
+//   pPacket->flags        = 0;
+//   pPacket->payload_size = size;
+//   if (pPacket->payload_size > 0)
+//     pPacket->payload = reinterpret_cast<const unsigned char*>(bufferptr);
+//   else
+//   {
+//     pPacket->payload = nullptr;
+//     pPacket->flags   = 1;
+//   }
 
-  pPacket->timestamp = 0;
-  size -= pPacket->payload_size;
-  bufferptr += pPacket->payload_size;
+//   pPacket->timestamp = 0;
+//   size -= pPacket->payload_size;
+//   bufferptr += pPacket->payload_size;
 
-  std::cout << pPacket->flags << std::endl;
-  std::cout << pPacket->payload_size << std::endl;
-  std::cout << reinterpret_cast<uint64_t>(pPacket->payload) << std::endl;
-  std::cout << pPacket->timestamp << std::endl;
+//   std::cout << pPacket->flags << std::endl;
+//   std::cout << pPacket->payload_size << std::endl;
+//   std::cout << reinterpret_cast<uint64_t>(pPacket->payload) << std::endl;
+//   std::cout << pPacket->timestamp << std::endl;
 
-  // for (int i = 0; i < 16; i++)
-  // {
-  //   std::cout << static_cast<uint32_t>(pPacket->payload[i]) << " ";
-  // }
+//   if (cuvidParseVideoData(videoparser, pPacket) != CUDA_SUCCESS)
+//   {
+//     std::cout << "cuvidParseVideoData failed." << std::endl;
+//     return 0;
+//   }
 
-  // std::cout << std::endl;
-
-  if (cuvidParseVideoData(videoparser, pPacket) != CUDA_SUCCESS)
-  {
-    std::cout << "cuvidParseVideoData failed." << std::endl;
-    return 0;
-  }
-
-  return 1;
-}
+//   return 1;
+// }
 
 // Call back function for handle video sequence
-static int CUDAAPI CheckVideoSequence(void* pUserData, CUVIDEOFORMAT* pFormat)
+static int CUDAAPI CheckVideoSequence(void*, CUVIDEOFORMAT*)
 {
   std::cout << "Check Video Sequence" << std::endl;
   return 1;
@@ -125,15 +118,15 @@ static int CUDAAPI HandlePictureDisplay(void* pUserData,
   return 1;
 }
 
-int main(int argc, char** argv)
+int main(int, char** argv)
 {
   CUvideodecoder videodecoder = nullptr;
   CUVIDDECODECREATEINFO cuviddecodecreateinfo;
-  CUVIDPICPARAMS picparam;
+  // CUVIDPICPARAMS picparam;
   CUvideoparser videoparser = nullptr;
   CUVIDPARSERPARAMS vpparam;
-  CUvideosource videosource = nullptr;
-  CUVIDSOURCEPARAMS vsparam;  // video source parameters
+  // CUvideosource videosource = nullptr;
+  // CUVIDSOURCEPARAMS vsparam;  // video source parameters
   CUVIDSOURCEDATAPACKET pPacket;
   std::ifstream bs;
 

@@ -76,7 +76,7 @@ int main(int argc, char** argv)
   {
     pcl::Vertices v;
     v = mesh.polygons[sz];
-    pcl::PointXYZRGB p[3];
+    // pcl::PointXYZRGB p[3];
 
     for (size_t iv = 0; iv < 3; iv++)
     {

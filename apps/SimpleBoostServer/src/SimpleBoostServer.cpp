@@ -31,8 +31,10 @@ class RenderEngine
     size_t filesize;
     std::unique_ptr<uint8_t[]> frame;
 
-    std::ifstream fs("/home/hypevr/Desktop/IFrameBS.h264",
-                     std::ifstream::in | std::ifstream::binary);
+    std::ifstream fs(
+        "/home/hypevr/Desktop/Caoyang_Shared/AndroidTestMaterial/"
+        "test1088.h264",
+        std::ifstream::in | std::ifstream::binary);
     fs.seekg(0, fs.end);
     filesize = fs.tellg();
     fs.seekg(0, fs.beg);
@@ -43,12 +45,17 @@ class RenderEngine
 
     // TODO(cjiang): Initialize graphic rendering
     // TODO(cjiang): Initialize encoder.
+
     for (;;)
     {
       GetRemoteHeadSetPosition();
+      std::cout << std::string(reinterpret_cast<const char*>(data_.get()),
+                               msglen_)
+                << std::endl;
       // TODO(cjiang): Set head position for graphic render engine
       // TODO(cjiang): Get rendered frame
       // TODO(cjiang): Encoded rendered frame
+      usleep(1000);
       SendRenderedFrame(frame.get(), filesize);
     }
   }
@@ -57,16 +64,15 @@ class RenderEngine
   void GetRemoteHeadSetPosition()
   {
     boost::asio::read(socket_, boost::asio::buffer(&msglen_, kMSGLENGTHSIZE));
+    std::cout << "data size " << msglen_ << std::endl;
     boost::asio::read(socket_, boost::asio::buffer(data_.get(), msglen_));
-    // std::cout << "Server read headset position size " << msglen_ <<
-    // std::endl;
   }
 
   void SendRenderedFrame(uint8_t* frame, uint32_t size)
   {
     boost::asio::write(socket_, boost::asio::buffer(&size, kMSGLENGTHSIZE));
     boost::asio::write(socket_, boost::asio::buffer(frame, size));
-    // std::cout << "Server send bitstream: " << size << std::endl;
+    std::cout << "Server send bitstream: " << size << std::endl;
   }
 
  private:
@@ -124,7 +130,7 @@ class RenderServer
         acceptor_.close();
         signal_.cancel();
         socket_.set_option(tcp::no_delay(true));
-
+        std::cout << "User Connected." << std::endl;
         std::make_shared<RenderEngine>(std::move(socket_))->Start();
       }
       else

@@ -4,6 +4,7 @@ extern "C" {
 }
 
 #include <unistd.h>
+#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -23,6 +24,10 @@ int main()
   std::unique_ptr<uint8_t[]> buffer, buffer2;
   std::string host;
   int filesize, filesize2;
+  std::chrono::system_clock::time_point beg, end;
+  std::chrono::duration<double, std::milli> dur;
+  double totaltime = 0;
+  int framecount   = 0;
 
   host   = "rtp://192.168.0.72:5004";  // VLC must use 5004
   fmtctx = avformat_alloc_context();
@@ -93,6 +98,8 @@ int main()
 
   while (1)
   {
+    beg = std::chrono::high_resolution_clock::now();
+
     pkt.data = buffer.get();
     pkt.size = filesize;
     if (av_interleaved_write_frame(fmtctx, &pkt) < 0)
@@ -112,6 +119,13 @@ int main()
     }
 
     usleep(1000);
+
+    end = std::chrono::high_resolution_clock::now();
+    dur = end - beg;
+    totaltime += dur.count();
+    framecount += 2;
+    std::cout << "FPS: " << 1000.0 * framecount / totaltime << '\r'
+              << std::flush;
   }
 
   return 0;

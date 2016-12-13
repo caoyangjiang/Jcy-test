@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(jcy_pcl)
 
 set(PROJECT_SRCS
@@ -16,7 +16,7 @@ source_group("src"     FILES ${PROJECT_SRCS})
 find_package( PCL REQUIRED )
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PCL_INCLUDE_DIRS})
+include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
 

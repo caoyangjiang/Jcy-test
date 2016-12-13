@@ -1,5 +1,9 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(BitSet)
+
+if(MSVC)
+  add_definitions("-DHVR_WINDOWS_DLL_API=__declspec\(dllimport\)")
+endif()
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/BitSet.cpp
