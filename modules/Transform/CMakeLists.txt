@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
 project(jcy_transform)
 
+# Define dllexport for public methods on Visual Studio for building library
+if(MSVC)
+  add_definitions(/D "HVR_WINDOWS_DLL_API=__declspec(dllexport)")
+endif()
+
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/Dct.cpp
 ${PROJECT_SOURCE_DIR}/src/SADct.cpp

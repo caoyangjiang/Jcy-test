@@ -1,4 +1,5 @@
 // Copyright @ 2016 Caoyang Jiang
+HVR_WINDOWS_DISABLE_ALL_WARNING
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
@@ -7,7 +8,7 @@
 #include <cmath>
 #include <iomanip>
 #include <vector>
-
+HVR_WINDOWS_ENABLE_ALL_WARNING
 #include "Jcy/Transform/SADct.h"
 
 using boost::numeric::ublas::matrix;

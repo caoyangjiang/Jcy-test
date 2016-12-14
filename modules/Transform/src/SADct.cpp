@@ -1,10 +1,13 @@
 // Copyright @ 2016 Caoyang Jiang
 
 #include "Jcy/Transform/SADct.h"
+
+HVR_WINDOWS_DISABLE_ALL_WARNING
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <vector>
+HVR_WINDOWS_ENABLE_ALL_WARNING
 
 namespace Jcy
 {
@@ -29,20 +32,20 @@ SADct::SADct()
 {
   /* Build transform kernels */
 
-  for (int k = 0; k < MAXDIM; k++)  //  DCT-k basis
+  for (uint32_t k = 0; k < MAXDIM; k++)  //  DCT-k basis
   {
-    int n = k + 1;
+    uint32_t n = k + 1;
 
     kernels_.push_back(Eigen::MatrixXd(n, n));
 
-    for (int row = 0; row < n; row++)
+    for (uint32_t row = 0; row < n; row++)
     {
-      for (int col = 0; col < n; col++)
+      for (uint32_t col = 0; col < n; col++)
       {
         // Eq. (1)
         double C0 = row == 0 ? sqrt(0.5) : 1;
 
-        kernels_[k](row, col) = C0 * cos(row * (col + 0.5) * M_PI / n);
+        kernels_[k](static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = C0 * cos(row * (col + 0.5) * M_PI / n);
       }
     }
   }
@@ -67,33 +70,33 @@ bool SADct::Forward(const std::vector<std::vector<double>>& indata,
   std::vector<std::vector<bool>> cont;
 
   cont   = contour_;
-  dim[0] = contour_.size();
-  dim[1] = contour_[0].size();
+  dim[0] = static_cast<int>(contour_.size());
+  dim[1] = static_cast<int>(contour_[0].size());
   mat    = Eigen::MatrixXd(dim[0], dim[1]);
 
   // Read 2D vector into matrix
-  for (int row = 0; row < static_cast<int>(indata.size()); row++)
+  for (size_t row = 0; row < indata.size(); row++)
   {
-    for (int col = 0; col < static_cast<int>(indata[row].size()); col++)
+    for (size_t col = 0; col < indata[row].size(); col++)
     {
-      mat(row, col) = indata[row][col];
+      mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = indata[row][col];
     }
   }
 
   // Push input matrix  up
-  for (int col = 0; col < dim[1]; col++)
+  for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
   {
-    int occupiedrow = 0;
-    for (int row = 0; row < dim[0]; row++)
+    size_t occupiedrow = 0;
+    for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
     {
       if (cont[row][col])
       {
         bool tmp;
         double mtmp;
 
-        mtmp = mat(row, col);
-        mat(row, col)         = 0.0;
-        mat(occupiedrow, col) = mtmp;
+        mtmp = mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col));
+        mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col))         = 0.0;
+        mat(static_cast<Eigen::Index>(occupiedrow), static_cast<Eigen::Index>(col)) = mtmp;
 
         tmp                    = cont[row][col];
         cont[row][col]         = false;
@@ -104,57 +107,58 @@ bool SADct::Forward(const std::vector<std::vector<double>>& indata,
   }
 
   // Column-wise transformation
-  for (int col = 0; col < dim[1]; col++)
+  for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
   {
     std::vector<double> columnval;
     // Scan column
-    for (int row = 0; row < dim[0]; row++)
+    for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
     {
       if (cont[row][col])
       {
-        columnval.push_back(mat(row, col));
+        columnval.push_back(mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)));
       }
     }
 
     if (!columnval.empty())
     {
       // Build vector
-      int n = static_cast<int>(columnval.size());
+      size_t n = columnval.size();
       Eigen::MatrixXd columnmat(n, 1);
 
-      for (int row = 0; row < n; row++)
+      for (size_t row = 0; row < n; row++)
       {
-        columnmat(row, 0) = columnval[row];
+        columnmat(static_cast<Eigen::Index>(row), 0) = columnval[row];
       }
 
       // Transform
       columnmat = 2 * (kernels_[n - 1] * columnmat) / n;  // Eq. (2)
 
       // Write back
-      for (int row = 0; row < dim[0]; row++)
+      for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
       {
         if (cont[row][col])
         {
-          mat(row, col) = columnmat(row, 0);
+          mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = columnmat(static_cast<Eigen::Index>(row), 0);
         }
       }
     }
   }
 
   // Push matrix left
-  for (int row = 0; row < dim[0]; row++)
+  for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
   {
-    int occupiedcol = 0;
-    for (int col = 0; col < dim[1]; col++)
+    size_t occupiedcol = 0;
+    for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
     {
       if (cont[row][col])
       {
         bool tmp;
         double mtmp;
+	 
 
-        mtmp = mat(row, col);
-        mat(row, col)         = 0.0;
-        mat(row, occupiedcol) = mtmp;
+        mtmp = mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col));
+        mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col))         = 0.0;
+        mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(occupiedcol)) = mtmp;
 
         tmp                    = cont[row][col];
         cont[row][col]         = false;
@@ -165,38 +169,38 @@ bool SADct::Forward(const std::vector<std::vector<double>>& indata,
   }
 
   // row-wise transformation
-  for (int row = 0; row < dim[0]; row++)
+  for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
   {
     std::vector<double> rowval;
     // Scan row
-    for (int col = 0; col < dim[0]; col++)
+    for (size_t col = 0; col < static_cast<size_t>(dim[0]); col++)
     {
       if (cont[row][col])
       {
-        rowval.push_back(mat(row, col));
+        rowval.push_back(mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)));
       }
     }
 
     if (!rowval.empty())
     {
       // Build vector
-      int n = static_cast<int>(rowval.size());
-      Eigen::MatrixXd rowmat(n, 1);
+      size_t n = rowval.size();
+      Eigen::MatrixXd rowmat(static_cast<Eigen::Index>(n), 1);
 
-      for (int col = 0; col < n; col++)
+      for (size_t col = 0; col < n; col++)
       {
-        rowmat(col, 0) = rowval[col];
+        rowmat(static_cast<Eigen::Index>(col), 0) = rowval[col];
       }
 
       // Transform
       rowmat = 2 * (kernels_[n - 1] * rowmat) / n;  // Eq. (2)
 
       // Write back
-      for (int col = 0; col < dim[1]; col++)
+      for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
       {
         if (cont[row][col])
         {
-          mat(row, col) = rowmat(col, 0);
+          mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = rowmat(static_cast<Eigen::Index>(col), 0);
         }
       }
     }
@@ -205,14 +209,14 @@ bool SADct::Forward(const std::vector<std::vector<double>>& indata,
   // Write only meaningful coefficients (according to contour map)
   outdata.clear();
 
-  for (int row = 0; row < dim[0]; row++)
+  for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
   {
     std::vector<double> tmp;
-    for (int col = 0; col < dim[1]; col++)
+    for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
     {
       if (cont[row][col])
       {
-        tmp.push_back(mat(row, col));
+        tmp.push_back(mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)));
       }
     }
 
@@ -237,10 +241,10 @@ bool SADct::Inverse(const std::vector<std::vector<double>>& indata,
   cont = contour_;
 
   // Push input matrix  up
-  for (int col = 0; col < dim[1]; col++)
+  for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
   {
-    int occupiedrow = 0;
-    for (int row = 0; row < dim[0]; row++)
+    size_t occupiedrow = 0;
+    for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
     {
       if (cont[row][col])
       {
@@ -256,10 +260,10 @@ bool SADct::Inverse(const std::vector<std::vector<double>>& indata,
   contup = cont;  // keep the up-pushed contour
 
   // Push matrix left
-  for (int row = 0; row < dim[0]; row++)
+  for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
   {
-    int occupiedcol = 0;
-    for (int col = 0; col < dim[1]; col++)
+    size_t occupiedcol = 0;
+    for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
     {
       if (cont[row][col])
       {
@@ -278,61 +282,61 @@ bool SADct::Inverse(const std::vector<std::vector<double>>& indata,
   Eigen::MatrixXd mat(dim[0], dim[1]);
   cont = contour_;
   // Load coefficients into matrix
-  for (int row = 0; row < static_cast<int>(indata.size()); row++)
+  for (size_t row = 0; row <  indata.size(); row++)
   {
-    for (int col = 0; col < static_cast<int>(indata[row].size()); col++)
+    for (size_t col = 0; col <  indata[row].size(); col++)
     {
-      mat(row, col) = indata[row][col];
+      mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = indata[row][col];
     }
   }
 
   // Row-wise inverse transformation
-  for (int row = 0; row < dim[1]; row++)
+  for (size_t row = 0; row < static_cast<size_t>(dim[1]); row++)
   {
     std::vector<double> rowval;
     // Scan row
-    for (int col = 0; col < dim[0]; col++)
+    for (size_t col = 0; col < static_cast<size_t>(dim[0]); col++)
     {
       if (contupleft[row][col])
       {
-        rowval.push_back(mat(row, col));
+        rowval.push_back(mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)));
       }
     }
 
     if (!rowval.empty())
     {
       // Build vector
-      int n = static_cast<int>(rowval.size());
+      size_t n =  rowval.size();
       Eigen::MatrixXd rowmat(n, 1);
 
-      for (int col = 0; col < n; col++)
+      for (size_t col = 0; col < n; col++)
       {
-        rowmat(col, 0) = rowval[col];
+        rowmat(static_cast<Eigen::Index>(col), 0) = rowval[col];
       }
 
       // Inverse Transform
       rowmat = kernels_[n - 1].transpose() * rowmat;  // Eq. (2)
 
       // Write back
-      for (int col = 0; col < dim[1]; col++)
+      for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
       {
         if (contupleft[row][col])
         {
-          mat(row, col) = rowmat(col, 0);
+          mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = rowmat(static_cast<Eigen::Index>(col), 0);
         }
       }
     }
   }
 
   // Reconstruct pushed up matrix
-  for (int row = 0; row < dim[1]; row++)
+  for (size_t row = 0; row < static_cast<size_t>(dim[1]); row++)
   {
-    int dstcol = dim[0] - 1;
-    while ((dstcol != 0) && !contup[row][dstcol]) dstcol--;
+    int dstcol =  dim[0] - 1;
+    while ((dstcol != 0) && !contup[row][static_cast<size_t>(dstcol)]) dstcol--;
 
-    for (int col = dim[0] - 1; col >= 0; col--)
+    for (int col =  dim[0] - 1; col >= 0; col--)
     {
-      if (contupleft[row][col])
+      if (contupleft[row][static_cast<size_t>(col)])
       {
         if (dstcol < col)
         {
@@ -340,59 +344,59 @@ bool SADct::Inverse(const std::vector<std::vector<double>>& indata,
           return false;
         }
 
-        mat(row, dstcol) = mat(row, col);
+        mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(dstcol)) = mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col));
         dstcol--;
       }
     }
   }
 
   // Column-wise inverse transform
-  for (int col = 0; col < dim[1]; col++)
+  for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
   {
     std::vector<double> columnval;
     // Scan column
-    for (int row = 0; row < dim[0]; row++)
+    for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
     {
       if (contup[row][col])
       {
-        columnval.push_back(mat(row, col));
+        columnval.push_back(mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)));
       }
     }
 
     if (!columnval.empty())
     {
       // Build vector
-      int n = static_cast<int>(columnval.size());
-      Eigen::MatrixXd columnmat(n, 1);
+      size_t n = columnval.size();
+      Eigen::MatrixXd columnmat(static_cast<Eigen::Index>(n), 1);
 
-      for (int row = 0; row < n; row++)
+      for (size_t row = 0; row < n; row++)
       {
-        columnmat(row, 0) = columnval[row];
+        columnmat(static_cast<Eigen::Index>(row), 0) = columnval[row];
       }
 
       // Transform
       columnmat = kernels_[n - 1].transpose() * columnmat;  // Eq. (2)
 
       // Write back
-      for (int row = 0; row < dim[0]; row++)
+      for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
       {
         if (contup[row][col])
         {
-          mat(row, col) = columnmat(row, 0);
+          mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = columnmat(static_cast<Eigen::Index>(row), 0);
         }
       }
     }
   }
 
   // Reconstruct original matrix by down push
-  for (int col = 0; col < dim[0]; col++)
+  for (size_t col = 0; col < static_cast<size_t>(dim[0]); col++)
   {
-    int dstrow = dim[1] - 1;
-    while ((dstrow != 0) && !contour_[dstrow][col]) dstrow--;
+    int  dstrow = dim[1] - 1;
+    while ((dstrow != 0) && !contour_[static_cast<size_t>(dstrow)][col]) dstrow--;
 
-    for (int row = dim[1] - 1; row >= 0; row--)
+    for (int row =  dim[1] - 1; row >= 0; row--)
     {
-      if (contup[row][col])
+      if (contup[static_cast<size_t>(row)][col])
       {
         if (dstrow < row)
         {
@@ -400,7 +404,7 @@ bool SADct::Inverse(const std::vector<std::vector<double>>& indata,
           return false;
         }
 
-        mat(dstrow, col) = mat(row, col);
+        mat(static_cast<Eigen::Index>(dstrow), static_cast<Eigen::Index>(col)) = mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col));
         dstrow--;
       }
     }
@@ -409,14 +413,14 @@ bool SADct::Inverse(const std::vector<std::vector<double>>& indata,
   // Write only meaningful samples (according to contour map)
   outdata.clear();
 
-  for (int row = 0; row < dim[0]; row++)
+  for (size_t row = 0; row < static_cast<size_t>(dim[0]); row++)
   {
     std::vector<double> tmp;
-    for (int col = 0; col < dim[1]; col++)
+    for (size_t col = 0; col < static_cast<size_t>(dim[1]); col++)
     {
       if (cont[row][col])
       {
-        tmp.push_back(mat(row, col));
+        tmp.push_back(mat(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)));
       }
     }
 

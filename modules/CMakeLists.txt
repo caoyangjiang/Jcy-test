@@ -2,4 +2,4 @@ cmake_minimum_required(VERSION 3.5)
 project(modules)
 
 add_subdirectory(Transform)
-add_subdirectory(MiscTools)
+#add_subdirectory(MiscTools)

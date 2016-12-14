@@ -3,12 +3,13 @@
 #ifndef MODULES_TRANSFORM_INCLUDE_JCY_TRANSFORM_DCT2D_H_
 #define MODULES_TRANSFORM_INCLUDE_JCY_TRANSFORM_DCT2D_H_
 
+HVR_WINDOWS_DISABLE_ALL_WARNING
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 #include <cmath>
 #include <memory>
-
 #include <vector>
+HVR_WINDOWS_ENABLE_ALL_WARNING
 #include "Jcy/Transform/Dct.h"
 
 namespace Jcy
@@ -22,10 +23,13 @@ class Dct2d : public Dct
   Dct2d();
   ~Dct2d() override;
 
-  bool Forward(const std::vector<std::vector<double>>& datain,
+  HVR_WINDOWS_DLL_API bool Forward(const std::vector<std::vector<double>>& datain,
                std::vector<std::vector<double>>& dataout) override;
-  bool Inverse(const std::vector<std::vector<double>>& datain,
+  HVR_WINDOWS_DLL_API bool Inverse(const std::vector<std::vector<double>>& datain,
                std::vector<std::vector<double>>& dataout) override;
+
+private:
+	const double M_PI = 3.1415926;
 };
 
 }  // namespace Jcy
