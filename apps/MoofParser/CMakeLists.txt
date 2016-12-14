@@ -9,4 +9,5 @@ set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/MoofParser.cpp
 )
 
+# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})

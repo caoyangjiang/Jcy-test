@@ -1,11 +1,11 @@
 
 // Copyright @ 2016 Caoyang Jiang
 
-#include <boost/dynamic_bitset.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+#include "boost/dynamic_bitset.hpp"
 
 class BitStream
 {

@@ -1,10 +1,4 @@
 // Copyright @ 2016 Caoyang Jiang
-#include <pcl/io/obj_io.h>
-#include <pcl/io/ply_io.h>
-#include <pcl/point_types.h>
-#include <thrust/device_vector.h>
-#include <opencv2/opencv.hpp>
-
 #include <algorithm>
 #include <chrono>
 #include <fstream>
@@ -12,6 +6,11 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include "opencv2/opencv.hpp"
+#include "pcl/io/obj_io.h"
+#include "pcl/io/ply_io.h"
+#include "pcl/point_types.h"
+#include "thrust/device_vector.h"
 
 #include "PCLKernel.cuh"
 

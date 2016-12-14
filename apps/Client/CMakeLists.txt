@@ -11,12 +11,15 @@ ${PROJECT_SOURCE_DIR}/src/Client.cpp
 ${PROJECT_SOURCE_DIR}/src/ChatMessage.h
 )
 
-
+# Find dependent libraries
 find_package( Boost COMPONENTS system REQUIRED )
+
+# Include paths
 include_directories(${Boost_INCLUDE_DIRS})
 
-# Library for parsing Dash media presentation description
-
+# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
+
+# Link application to libraries
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 

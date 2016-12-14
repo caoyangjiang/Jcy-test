@@ -125,13 +125,13 @@ class XMLParser
     if (reader_ == NULL) return false;
 
     // Get things going
-    int ret      = xmlTextReaderRead(reader_);
+    xmlTextReaderRead(reader_);
     int nodetype = xmlTextReaderNodeType(reader_);
 
     while ((nodetype == NodeType::COMMENT) ||
            (nodetype == NodeType::WHITESPACE))
     {
-      ret      = xmlTextReaderRead(reader_);
+      xmlTextReaderRead(reader_);
       nodetype = xmlTextReaderNodeType(reader_);
     }
 
@@ -261,6 +261,7 @@ class XMLParser
       std::cout << "[ERROR]: NodeType " << nodetype << " not handled"
                 << std::endl;
     }
+    return 0;
   }
 
  private:
@@ -304,8 +305,9 @@ class MpdParser
   }
 
  private:
-  bool NodeToMpd(std::shared_ptr<Node> &root)
+  bool NodeToMpd(std::shared_ptr<Node> &)
   {
+    return false;
   }
 
  private:
@@ -313,7 +315,7 @@ class MpdParser
   std::shared_ptr<MPD> mpd_;
 };
 
-int main(int argc, char **argv)
+int main(int, char **argv)
 {
   XMLParser xmlparser;
   xmlparser.Parse(std::string(argv[1]));

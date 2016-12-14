@@ -8,7 +8,7 @@ endif()
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/NetworkBytes.cpp
 )
-# Library for parsing Dash media presentation description
 
+# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 

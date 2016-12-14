@@ -1,7 +1,4 @@
-extern "C" {
-#include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
-}
+// Copyright @ 2016 Caoyang Jiang
 
 #include <unistd.h>
 #include <chrono>
@@ -9,6 +6,12 @@ extern "C" {
 #include <fstream>
 #include <iostream>
 #include <memory>
+
+extern "C" {
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+}
+
 int main()
 {
   avcodec_register_all();

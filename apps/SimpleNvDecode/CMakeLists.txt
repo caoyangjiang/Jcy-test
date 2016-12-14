@@ -9,11 +9,15 @@ set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/NvDecode.cpp
 )
 
+# Find dependent libraries
 find_package( CUDA REQUIRED )
 
+# Include paths
 include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
 
+# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
+# Link application to libraries
 target_link_libraries(${PROJECT_NAME} nvcuvid)
 target_link_libraries(${PROJECT_NAME} cuda)

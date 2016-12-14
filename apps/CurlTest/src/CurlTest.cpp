@@ -1,9 +1,9 @@
 // Copyright @ 2016 Caoyang Jiang
 
-#include <curl/curl.h>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include "curl/curl.h"
 class DLData
 {
  public:

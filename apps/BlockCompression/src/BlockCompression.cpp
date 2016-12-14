@@ -1,11 +1,11 @@
 // Copyright @ 2016 Caoyang Jiang
 
-#include <opencv/cv.h>
-#include <squish/squish.h>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <opencv2/highgui.hpp>
+#include "opencv/cv.h"
+#include "opencv2/highgui.hpp"
+#include "squish/squish.h"
 
 int main(int, char** argv)
 {

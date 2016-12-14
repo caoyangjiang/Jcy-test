@@ -1,8 +1,5 @@
 // Copyright @ 2016 Caoyang Jiang
-// #include <boost/numeric/ublas/io.hpp>
-// #include <boost/numeric/ublas/matrix.hpp>
 
-// #include <unistd.h>
 #include <atomic>
 #include <condition_variable>
 #include <functional>

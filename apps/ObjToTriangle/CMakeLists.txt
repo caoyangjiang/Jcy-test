@@ -9,10 +9,16 @@ set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/ObjToTriangle.cpp
 )
 
+# Find dependent libraries
 find_package( PCL REQUIRED )
 
+# Include paths
 include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
+
+# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
+
+# Link application to libraries
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 

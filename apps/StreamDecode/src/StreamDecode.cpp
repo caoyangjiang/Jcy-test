@@ -1,11 +1,13 @@
+// Copyright @ 2016 Caoyang Jiang
+
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <memory>
 
 extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
 }
 
 /**

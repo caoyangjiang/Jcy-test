@@ -12,14 +12,14 @@ ${PROJECT_SOURCE_DIR}/src/PCLKernel.cu
 ${PROJECT_SOURCE_DIR}/src/PCLKernel.cuh
 )
 
+# Find dependent libraries
 find_package( PCL REQUIRED )
 find_package( OpenCV REQUIRED )
 find_package( CUDA REQUIRED )
 list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52;")
 list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50;")
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35;")
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30;")
 
+# Include paths
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
@@ -32,10 +32,9 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11;")
 endif()
 
+# Compile project into application
 cuda_add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
+# Link application to libraries
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES})
-
-#target_link_libraries(${PROJECT_NAME} jcy_eigen)
-

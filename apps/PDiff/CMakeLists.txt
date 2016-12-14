@@ -10,5 +10,6 @@ set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/pdiff.cpp
 )
 
+# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 

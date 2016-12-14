@@ -1,4 +1,3 @@
-
 // Copyright @ 2016 Caoyang Jiang
 
 #include <fstream>

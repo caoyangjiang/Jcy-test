@@ -1,3 +1,4 @@
+// Copyright @ 2016 Caoyang Jiang
 
 #include <cuda.h>
 #include <nvEncodeAPI.h>

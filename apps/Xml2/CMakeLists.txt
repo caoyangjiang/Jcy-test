@@ -9,12 +9,15 @@ endif()
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/Xml2.cpp
 )
-# Library for parsing Dash media presentation description
+
+# Find dependent libraries
 find_package( LibXml2 REQUIRED )
 
+# Include paths
 include_directories(${LIBXML2_INCLUDE_DIR})
-message(${LIBXML2_INCLUDE_DIR})
 
+# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
+# Link application to libraries
 target_link_libraries(${PROJECT_NAME} ${LIBXML2_LIBRARIES})

@@ -1,6 +1,6 @@
 // Copyright @ 2016 Caoyang Jiang
-#include <cuda.h>
 
+#include <cuda.h>
 #include <cuviddec.h>
 #include <nvcuvid.h>
 #include <cstring>

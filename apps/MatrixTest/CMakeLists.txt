@@ -9,15 +9,19 @@ set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/MatrixTest.cpp
 )
 
-
+# Find dependent libraries
 find_package( Boost REQUIRED )
 find_package( Eigen3 REQUIRED )
 
+# Include paths
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 include_directories(../../modules/Transform/include)
 
+# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
+
+# Link application to libraries
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} jcy_transform)
 
