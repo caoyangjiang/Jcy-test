@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <vector>
 
-#include "Jcy/Eigen/SADct.h"
+#include "Jcy/Transform/SADct.h"
 
 using boost::numeric::ublas::matrix;
 

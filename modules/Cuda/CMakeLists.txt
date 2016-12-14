@@ -19,7 +19,10 @@ ${PROJECT_SOURCE_DIR}/include/Jcy/Cuda/CudaConfig.h
 source_group("include" FILES ${PROJECT_INCS})
 source_group("src"     FILES ${PROJECT_SRCS})
 
+# Find dependent libraries
 find_package( CUDA REQUIRED )
+
+# Add extra flags to NVCC
 list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52;")
 list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50;")
 if(MSVC)
@@ -29,9 +32,11 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11;")
 endif()
 
+# Include paths
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
 
+# Link module to external libraries
 cuda_add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
 
 # Group this project into "hvr-decode/modules" in Visual Studio

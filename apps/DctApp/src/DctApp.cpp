@@ -9,8 +9,8 @@
 #include <iomanip>
 #include <vector>
 
-#include "Jcy/Eigen/Dct2d.h"
-#include "Jcy/Eigen/SADct.h"
+#include "Jcy/Transform/Dct2d.h"
+#include "Jcy/Transform/SADct.h"
 
 using boost::numeric::ublas::matrix;
 

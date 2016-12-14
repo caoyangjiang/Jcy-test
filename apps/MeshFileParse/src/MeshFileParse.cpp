@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "Jcy/ObjFile/ObjFile.h"
+#include "Jcy/MiscTools/ObjFile.h"
 
 #define MESH_PRIMITIVE_POINT 1
 #define MESH_PRIMTIVE_LINE 2
