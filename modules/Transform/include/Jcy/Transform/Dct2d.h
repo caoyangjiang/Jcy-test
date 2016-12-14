@@ -23,13 +23,15 @@ class Dct2d : public Dct
   Dct2d();
   ~Dct2d() override;
 
-  HVR_WINDOWS_DLL_API bool Forward(const std::vector<std::vector<double>>& datain,
-               std::vector<std::vector<double>>& dataout) override;
-  HVR_WINDOWS_DLL_API bool Inverse(const std::vector<std::vector<double>>& datain,
-               std::vector<std::vector<double>>& dataout) override;
+  HVR_WINDOWS_DLL_API bool Forward(
+      const std::vector<std::vector<double>>& datain,
+      std::vector<std::vector<double>>& dataout) override;
+  HVR_WINDOWS_DLL_API bool Inverse(
+      const std::vector<std::vector<double>>& datain,
+      std::vector<std::vector<double>>& dataout) override;
 
-private:
-	const double M_PI = 3.1415926;
+ private:
+  const double PI = 3.1415926;
 };
 
 }  // namespace Jcy

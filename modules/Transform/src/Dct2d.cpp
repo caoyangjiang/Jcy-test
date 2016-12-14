@@ -59,7 +59,8 @@ bool Dct2d::Forward(const std::vector<std::vector<double>>& indata,
   {
     for (size_t col = 0; col < static_cast<size_t>(dim); col++)
     {
-      in(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = indata[row][col];
+      in(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) =
+          indata[row][col];
     }
   }
 
@@ -70,7 +71,8 @@ bool Dct2d::Forward(const std::vector<std::vector<double>>& indata,
     for (int col = 0; col < dim; col++)
     {
       c1 = (row == 0) ? 0.5 : sqrt(2) / 2.0;
-      kernel(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = c1 * cos((2 * col + 1) * row * M_PI / (2 * dim));
+      kernel(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) =
+          c1 * cos((2 * col + 1) * row * PI / (2 * dim));
     }
   }
 
@@ -84,7 +86,8 @@ bool Dct2d::Forward(const std::vector<std::vector<double>>& indata,
   {
     for (size_t col = 0; col < static_cast<size_t>(dim); col++)
     {
-      outdata[row][col] = out(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col));
+      outdata[row][col] =
+          out(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col));
     }
   }
 
@@ -133,7 +136,8 @@ bool Dct2d::Inverse(const std::vector<std::vector<double>>& indata,
   {
     for (size_t col = 0; col < static_cast<size_t>(dim); col++)
     {
-      in(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) = indata[row][col];
+      in(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col)) =
+          indata[row][col];
     }
   }
 
@@ -144,7 +148,7 @@ bool Dct2d::Inverse(const std::vector<std::vector<double>>& indata,
     for (int col = 0; col < dim; col++)
     {
       c1 = (row == 0) ? 0.5 : sqrt(2) / 2.0;
-      kernel(row, col) = c1 * cos((2 * col + 1) * row * M_PI / (2 * dim));
+      kernel(row, col) = c1 * cos((2 * col + 1) * row * PI / (2 * dim));
     }
   }
 
@@ -159,7 +163,8 @@ bool Dct2d::Inverse(const std::vector<std::vector<double>>& indata,
   {
     for (size_t col = 0; col < static_cast<size_t>(dim); col++)
     {
-      outdata[row][col] = out(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col));
+      outdata[row][col] =
+          out(static_cast<Eigen::Index>(row), static_cast<Eigen::Index>(col));
     }
   }
   return true;
