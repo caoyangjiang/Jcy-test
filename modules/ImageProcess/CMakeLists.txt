@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
-project(jcy_imageproc)
+project(jcy_imageprocess)
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/Convertor.cpp
 )
 
 set(PROJECT_INCS
-${PROJECT_SOURCE_DIR}/include/Jcy/ImageProc/Convertor.h
+${PROJECT_SOURCE_DIR}/include/Jcy/ImageProcess/Convertor.h
 )
 
 # Separate include and src folder on Visual Studio

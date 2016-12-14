@@ -1,6 +1,6 @@
 // Copyright @ 2016 Caoyang Jiang
 
-#include "Jcy/ImageProcess/Convertor.h"
+#include "Jcy/EntropyCoder/Convertor.h"
 
 #include <fstream>
 #include <iostream>

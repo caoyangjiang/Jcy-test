@@ -6,7 +6,7 @@ ${PROJECT_SOURCE_DIR}/src/Convertor.cpp
 )
 
 set(PROJECT_INCS
-${PROJECT_SOURCE_DIR}/include/Jcy/ImageProc/Convertor.h
+${PROJECT_SOURCE_DIR}/include/Jcy/EntropyCoder/Convertor.h
 )
 
 # Separate include and src folder on Visual Studio
