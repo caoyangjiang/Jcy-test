@@ -6,6 +6,7 @@ ${PROJECT_SOURCE_DIR}/src/ObjFile.cpp
 ${PROJECT_SOURCE_DIR}/src/CloudReader.cpp
 ${PROJECT_SOURCE_DIR}/src/HvrMeshContainer.cpp
 ${PROJECT_SOURCE_DIR}/src/DdsWriter.cpp
+${PROJECT_SOURCE_DIR}/src/BitStream.cpp
 )
 
 set(PROJECT_INCS
@@ -13,6 +14,7 @@ ${PROJECT_SOURCE_DIR}/include/Jcy/MiscTools/ObjFile.h
 ${PROJECT_SOURCE_DIR}/include/Jcy/MiscTools/CloudReader.h
 ${PROJECT_SOURCE_DIR}/include/Jcy/MiscTools/HvrMeshContainer.h
 ${PROJECT_SOURCE_DIR}/include/Jcy/MiscTools/DdsWriter.h
+${PROJECT_SOURCE_DIR}/include/Jcy/MiscTools/BitStream.h
 )
 
 # Separate include and src folder on Visual Studio
