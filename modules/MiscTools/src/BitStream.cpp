@@ -97,12 +97,12 @@ const uint8_t* BitStream::Read(size_t size)
   {
     if (rdpos_ == 0)
     {
-      size_t bytes = size / 8;
+      size_t bytes = size >> 3;
       size_t rem   = size % 8;
 
       for (size_t byte = 0; byte < bytes; byte++)
       {
-        rdbuf_.push_back(inbuf_[bitcounter_ / 8]);
+        rdbuf_.push_back(inbuf_[bitcounter_ >> 3]);
         bitcounter_ = bitcounter_ + 8;
       }
 
@@ -115,6 +115,7 @@ const uint8_t* BitStream::Read(size_t size)
 
       rdpos_ = rem;
     }
+
     else
     {
       size_t b = 0;
@@ -124,7 +125,7 @@ const uint8_t* BitStream::Read(size_t size)
         if (rdpos_ == 0) rdbuf_.push_back(uint8_t(0x00));
         uint8_t& newbyte = rdbuf_.back();
         newbyte          = newbyte |
-                  (((inbuf_[bitcounter_ >> 8]) >> (bitcounter_ % 8)) & 0x01)
+                  (((inbuf_[bitcounter_ >> 3]) >> (bitcounter_ % 8)) & 0x01)
                       << rdpos_;
         rdpos_ = (rdpos_ + 1) % 8;
         bitcounter_++;

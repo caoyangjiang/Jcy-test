@@ -86,7 +86,7 @@ int main()
   std::cout << "Write 1M bits took " << milliseconds.count() << " ms."
             << std::endl;
 
-  bs1.Load(reinterpret_cast<const uint8_t*>(bitarray), 1000000);
+  bs1.Load(reinterpret_cast<const uint8_t*>(bitarray), 960000);
 
   beg = std::chrono::high_resolution_clock::now();
   bs1.Read(960000);
@@ -103,12 +103,13 @@ int main()
   bs1.Reset();
 
   beg = std::chrono::high_resolution_clock::now();
-  for (size_t i = 0; i < 60000; i++)
+  for (size_t i = 0; i < 120000; i++)
   {
     bs1.Read(8);
   }
   end          = std::chrono::high_resolution_clock::now();
   milliseconds = end - beg;
+  std::cout << bs1.GetSize() << std::endl;
   std::cout << "Reading 1M bits sequentially took " << milliseconds.count()
             << " ms." << std::endl;
 
