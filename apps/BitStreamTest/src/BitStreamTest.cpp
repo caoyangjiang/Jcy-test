@@ -62,8 +62,8 @@ int main()
             << std::endl;
   bs0.Reset();
 
-  std::chrono::system_clock::time_point beg;
-  std::chrono::system_clock::time_point end;
+  std::chrono::high_resolution_clock::time_point beg;
+  std::chrono::high_resolution_clock::time_point end;
   std::chrono::duration<double, std::milli> milliseconds;
 
   beg = std::chrono::high_resolution_clock::now();
@@ -103,9 +103,9 @@ int main()
   bs1.Reset();
 
   beg = std::chrono::high_resolution_clock::now();
-  for (size_t i = 0; i < 120000; i++)
+  for (size_t i = 0; i <60000; i++)
   {
-    bs1.Read(8);
+    bs1.Read(16);
   }
   end          = std::chrono::high_resolution_clock::now();
   milliseconds = end - beg;

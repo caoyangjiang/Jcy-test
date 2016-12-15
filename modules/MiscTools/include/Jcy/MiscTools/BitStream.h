@@ -27,8 +27,8 @@ class BitStream
   };
 
  public:
-  explicit BitStream(enum MODE mode, enum ENDIAN endian);
-  ~BitStream();
+  HVR_WINDOWS_DLL_API explicit BitStream(enum MODE mode, enum ENDIAN endian);
+  HVR_WINDOWS_DLL_API ~BitStream();
 
   /**
    * @brief      Reset internal bit buffer. If mode is MODE::RD, the read
@@ -37,7 +37,7 @@ class BitStream
    *             beginning of the buffer. Bit counter and bit buffer are
    *             cleared.
    */
-  void Reset();
+  HVR_WINDOWS_DLL_API void Reset();
 
   /**
    * @brief      Gets the bit buffer. If mode is MODE::RD, this simply returns
@@ -46,7 +46,7 @@ class BitStream
    *
    * @return     The bit buffer.
    */
-  const uint8_t* GetBitBuffer() const;
+  HVR_WINDOWS_DLL_API const uint8_t* GetBitBuffer() const;
 
   /**
    * @brief      Gets the size. If mode is MODE::RD, this returns unread bits.
@@ -54,7 +54,7 @@ class BitStream
    *
    * @return     unread bits or total written bits.
    */
-  size_t GetSize() const;
+  HVR_WINDOWS_DLL_API size_t GetSize() const;
 
   /**
    * @brief      Write bit(s)
@@ -65,7 +65,7 @@ class BitStream
    *
    * @tparam     T         Bit container type.
    */
-  void Write(const uint8_t* bits, size_t bitcount);
+  HVR_WINDOWS_DLL_API void Write(const uint8_t* bits, size_t bitcount);
 
   /**
    * @brief      If the number of bit left is less than requested or all bits
@@ -75,7 +75,7 @@ class BitStream
    *
    * @return     Positive if successful, else nullptr.
    */
-  const uint8_t* Read(size_t bitcount);
+  HVR_WINDOWS_DLL_API const uint8_t* Read(size_t bitcount);
 
   /**
    * @brief      To avoid extra copying and allow various external bit buffer
@@ -87,7 +87,7 @@ class BitStream
    * @param[in]  rawstream  The rawstream
    * @param[in]  sizes      The sizes
    */
-  void Load(const uint8_t* bits, size_t sizes);
+  HVR_WINDOWS_DLL_API void Load(const uint8_t* bits, size_t sizes);
 
  private:
   // For writing

@@ -55,7 +55,7 @@ void BitStream::Write(const uint8_t* bits, size_t size)
       // Fill up last byte
       while ((wrpos_ != 0) && (b != size))
       {
-        lastbyte = lastbyte | (((bits[b >> 3]) >> (b % 8)) & 0x01) << wrpos_;
+		  lastbyte = static_cast<uint8_t>(lastbyte | (((bits[b >> 3]) >> (b % 8)) & 0x01) << wrpos_);
         wrpos_   = (wrpos_ + 1) % 8;
         b++;
         bitcounter_++;
@@ -66,7 +66,7 @@ void BitStream::Write(const uint8_t* bits, size_t size)
       {
         if (wrpos_ == 0) wrbuf_.push_back(uint8_t(0x00));
         uint8_t& newbyte = wrbuf_.back();
-        newbyte = newbyte | (((bits[b >> 3]) >> (b % 8)) & 0x01) << wrpos_;
+        newbyte = static_cast<uint8_t>(newbyte | (((bits[b >> 3]) >> (b % 8)) & 0x01) << wrpos_);
         wrpos_  = (wrpos_ + 1) % 8;
         b++;
         bitcounter_++;
@@ -108,8 +108,8 @@ const uint8_t* BitStream::Read(size_t size)
 
       if (rem != 0)
       {
-        rdbuf_.push_back(((static_cast<uint8_t>(1) << rem) - 1) &
-                         (inbuf_[bitcounter_]));
+        rdbuf_.push_back(static_cast<uint8_t>(((static_cast<uint8_t>(1) << rem) - 1) &
+                         (inbuf_[bitcounter_])));
         bitcounter_ += rem;
       }
 
@@ -124,9 +124,9 @@ const uint8_t* BitStream::Read(size_t size)
       {
         if (rdpos_ == 0) rdbuf_.push_back(uint8_t(0x00));
         uint8_t& newbyte = rdbuf_.back();
-        newbyte          = newbyte |
+        newbyte          = static_cast<uint8_t>(newbyte |
                   (((inbuf_[bitcounter_ >> 3]) >> (bitcounter_ % 8)) & 0x01)
-                      << rdpos_;
+                      << rdpos_);
         rdpos_ = (rdpos_ + 1) % 8;
         bitcounter_++;
         b++;
