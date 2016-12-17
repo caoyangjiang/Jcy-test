@@ -1,6 +1,6 @@
 // Copyright @ 2016 Caoyang Jiang
 
-#include "Jcy/MiscTools/CloudReader.h"
+#include "Jcy/PointCloudTools/CloudReader.h"
 #include <string>
 
 namespace Jcy

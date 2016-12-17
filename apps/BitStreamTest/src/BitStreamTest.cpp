@@ -26,7 +26,7 @@ int main()
     bs0.Write(reinterpret_cast<const uint8_t*>(&one), 1);
   }
 
-  if (bs0.GetSize() == 2000)
+  if (bs0.GetWrittenSize() == 2000)
   {
     std::cout << "Single bit push length test passed " << std::endl;
   }
@@ -40,7 +40,7 @@ int main()
     bs0.Write(reinterpret_cast<const uint8_t*>(&zeroone), 2);
   }
 
-  if (bs0.GetSize() == 2000)
+  if (bs0.GetWrittenSize() == 2000)
   {
     std::cout << "Double bit push length test passed " << std::endl;
   }
@@ -53,7 +53,7 @@ int main()
     bs0.Write(reinterpret_cast<const uint8_t*>(&zeroone), 3);
   }
 
-  if (bs0.GetSize() == 3000)
+  if (bs0.GetWrittenSize() == 3000)
   {
     std::cout << "Triple bit push length test passed " << std::endl;
   }
@@ -95,7 +95,7 @@ int main()
   std::cout << "Reading 1M bits once took " << milliseconds.count() << " ms."
             << std::endl;
 
-  if (bs1.GetSize() == 0)
+  if (bs1.GetRemSize() == 0)
   {
     std::cout << "Reading 1M bits once correct" << std::endl;
   }
@@ -103,17 +103,17 @@ int main()
   bs1.Reset();
 
   beg = std::chrono::high_resolution_clock::now();
-  for (size_t i = 0; i <60000; i++)
+  for (size_t i = 0; i < 60000; i++)
   {
     bs1.Read(16);
   }
   end          = std::chrono::high_resolution_clock::now();
   milliseconds = end - beg;
-  std::cout << bs1.GetSize() << std::endl;
+  std::cout << bs1.GetRemSize() << std::endl;
   std::cout << "Reading 1M bits sequentially took " << milliseconds.count()
             << " ms." << std::endl;
 
-  if (bs1.GetSize() == 0)
+  if (bs1.GetRemSize() == 0)
   {
     std::cout << "Reading 1M bits sequentially correct" << std::endl;
   }

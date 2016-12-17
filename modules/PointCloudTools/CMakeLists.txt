@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(jcy_entropycoder)
+project(jcy_pointcloudtools)
 
 # Define dllexport for public methods on Visual Studio for building library
 if(MSVC)
@@ -7,26 +7,29 @@ if(MSVC)
 endif()
 
 set(PROJECT_SRCS
-${PROJECT_SOURCE_DIR}/src/ArithmeticEngine.cpp
+${PROJECT_SOURCE_DIR}/src/CloudReader.cpp
 )
 
 set(PROJECT_INCS
-${PROJECT_SOURCE_DIR}/include/Jcy/EntropyCoder/ArithmeticEngine.h
+${PROJECT_SOURCE_DIR}/include/Jcy/PointCloudTools/CloudReader.h
 )
 
 # Separate include and src folder on Visual Studio
 source_group("include" FILES ${PROJECT_INCS})
 source_group("src"     FILES ${PROJECT_SRCS})
 
+# Find dependent libraries
+find_package( PCL REQUIRED )
+
 # Include paths
+include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(../MiscTools/include)
 
 # Compile module into library
 add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
 
 # Link module to external libraries
-target_link_libraries(${PROJECT_NAME} jcy_misctools)
+target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 # Group this project into "hvr-decode/modules" in Visual Studio
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Jcy-test/modules")

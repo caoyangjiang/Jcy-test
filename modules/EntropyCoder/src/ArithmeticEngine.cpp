@@ -3,41 +3,56 @@
 #include "Jcy/EntropyCoder/ArithmeticEngine.h"
 
 HVR_WINDOWS_DISABLE_ALL_WARNING
-#include <fstream>
+#include <cstring>
 #include <iostream>
-#include <string>
+#include <memory>
 HVR_WINDOWS_ENABLE_ALL_WARNING
 
 namespace Jcy
 {
-template class ArithmeticEngine<int8_t>;
-template class ArithmeticEngine<int16_t>;
-template class ArithmeticEngine<int32_t>;
+template class ArithmeticEngine<uint8_t>;
+template class ArithmeticEngine<uint16_t>;
+template class ArithmeticEngine<uint32_t>;
 
-template <typename symbolcontainer>
-ArithmeticEngine::ArithmeticEngine()
+template <typename T>
+ArithmeticEngine<T>::ArithmeticEngine(enum MODE mode)
+{
+  mode_ = mode;
+
+  if (mode_ == DECODE)
+  {
+    bs_ = std::make_unique<BitStream>(BitStream::MODE::RD,
+                                      BitStream::ENDIAN::LITTLE);
+  }
+  else if (mode_ == ENCODE)
+  {
+    bs_ = std::make_unique<BitStream>(BitStream::MODE::WR,
+                                      BitStream::ENDIAN::LITTLE);
+  }
+
+  backupmodel_.reserve(1000000);
+  runtimemodel_.reserve(1000000);
+}
+
+template <typename T>
+ArithmeticEngine<T>::~ArithmeticEngine()
 {
 }
 
-template <typename symbolcontainer>
-ArithmeticEngine::~ArithmeticEngine()
+template <typename T>
+void ArithmeticEngine<T>::ResetBitBuffer()
 {
+  bs_->Reset();
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::ResetBitBuffer()
+template <typename T>
+void ArithmeticEngine<T>::ResetSymBuffer()
 {
-  bitwriter.Reset();
+  decodedsymbols_.clear();
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::ResetSymBuffer()
-{
-  decodedsymbols_.reset();
-}
-
-template <typename symbolcontainer>
-void ArithmeticEngine::ResetEngineState()
+template <typename T>
+void ArithmeticEngine<T>::ResetEngineState()
 {
   low_          = 0;
   high_         = kTopValue_;
@@ -47,18 +62,20 @@ void ArithmeticEngine::ResetEngineState()
   value_        = 0;
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::ResetProbabilityModel()
+template <typename T>
+void ArithmeticEngine<T>::ResetProbabilityModel()
 {
   std::memcpy(reinterpret_cast<void*>(runtimemodel_.data()),
               reinterpret_cast<void*>(backupmodel_.data()),
               backupmodel_.size() * sizeof(uint32_t));
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::LoadProbabilityModel(
+template <typename T>
+void ArithmeticEngine<T>::LoadProbabilityModel(
     const std::vector<uint64_t>& frequency)
 {
+  backupmodel_.assign(frequency.size() + 1, 0);
+
   // Find out total probability
   for (size_t i = 0; i < frequency.size(); i++)
   {
@@ -74,82 +91,96 @@ void ArithmeticEngine::LoadProbabilityModel(
   runtimemodel_ = backupmodel_;
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::LoadProbabilityModel(enum PROBABILITYMODEL,
-                                            uint64_t samplesize)
+template <typename T>
+void ArithmeticEngine<T>::LoadProbabilityModel(enum PROBABILITYMODEL, uint64_t)
 {
-  uint64_t maxsamplesize = static_cast<uint64_t>(1)
-                           << (sizeof(symbolcontainer) * 8);
-  samplesize = samplesize > maxsamplesize ? maxsamplesize : samplesize;
-
-  // Build probability
-  void BuildProbability(, reint);
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::Encode(const T* symbols, uint32_t totalsymbol)
+template <typename T>
+void ArithmeticEngine<T>::Encode(const T* symbols, size_t totalsymbol)
 {
-  for (uint32_t isym; isym < totalsymbol; isymb++)
+  size_t symcnt = 0;
+  while (symcnt != totalsymbol)
   {
-    EncodeASymbol(symbols[isym]);
+    EncodeASymbol(*(symbols + symcnt));
+    symcnt++;
   }
 
   EncodeFlush();
 }
 
-template <typename symbolcontainer>
-bool ArithmeticEngine::Decode(const T* bits, uint32_t totalsymbol)
+template <typename T>
+void ArithmeticEngine<T>::Decode(const uint8_t* bits,
+                                 size_t totalbits,
+                                 size_t totalsymbol)
 {
-  breader_.Load(bits);
+  bs_->Load(bits, totalbits);
 
-  for (uint32_t isym; isym < totalsymbol; isym++)
+  // Get decoder going
+  for (uint64_t i = 1; i <= kCodeValueBits_; i++)
   {
-    decodedsymbols_.push_back(DecodeASymbol());
+    if (bs_->GetRemSize() > 0)
+    {
+      uint8_t bit = bs_->ReadBit();
+      value_      = (2 * value_) + static_cast<uint64_t>(bit);
+    }
+    else
+    {
+      // Else append 0
+      value_ = 2 * value_;
+    }
+  }
+
+  size_t symcnt = 0;
+  while (symcnt != totalsymbol)
+  {
+    std::cout << DecodeASymbol() << std::endl;
+    symcnt++;
   }
 }
 
-template <typename symbolcontainer>
-const char* ArithmeticEngine::GetCodedBits() const
+template <typename T>
+const char* ArithmeticEngine<T>::GetCodedBits() const
 {
-  return bwriter_.GetBitBuffer();
+  return reinterpret_cast<const char*>(bs_->GetBitBuffer());
 }
 
-template <typename symbolcontainer>
-size_t ArithmeticEngine::GetCodedBitsCount() const
+template <typename T>
+size_t ArithmeticEngine<T>::GetCodedBitsCount() const
 {
-  return bwriter_.GetBitCount();
+  return bs_->GetWrittenSize();
 }
 
-template <typename symbolcontainer>
-const T* ArithmeticEngine::GetDecodedSymbols() const
+template <typename T>
+const T* ArithmeticEngine<T>::GetDecodedSymbols() const
 {
   return decodedsymbols_.data();
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::EncodeASymbol(T symbol)
+template <typename T>
+void ArithmeticEngine<T>::EncodeASymbol(T symbol)
 {
   range_ = high_ - low_ + 1;
-  high_  = low_ + (range_ * runtimemodel_[symidx]) / runtimemodel_[0] - 1;
-  low_   = low_ + (range_ * runtimemodel_[symidx + 1]) / runtimemodel_[0];
+  high_  = low_ + (range_ * runtimemodel_[symbol]) / runtimemodel_[0] - 1;
+  low_   = low_ + (range_ * runtimemodel_[symbol + 1]) / runtimemodel_[0];
 
   while (true)
   {
     if (high_ < kHalfValue_)
     {
-      bwriter_.Append(0);
+      bs_->WriteZero();
       while (oppositebits_ > 0)
       {
-        bwriter_.Append(1);
+        bs_->WriteOne();
         oppositebits_--;
       }
     }
     else if (low_ >= kHalfValue_)
     {
-      bwriter_.Append(1);
+      bs_->WriteOne();
       while (oppositebits_ > 0)
       {
-        bwriter_.Append(0);
+        bs_->WriteZero();
         oppositebits_--;
       }
       low_ -= kHalfValue_;
@@ -171,34 +202,136 @@ void ArithmeticEngine::EncodeASymbol(T symbol)
   }
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::EncodeFlush()
+template <typename T>
+void ArithmeticEngine<T>::EncodeFlush()
 {
   oppositebits_++;
 
   if (low_ < kQtrValue_)
   {
-    bwriter_.Append(0);
+    bs_->WriteZero();
     while (oppositebits_ > 0)
     {
-      bwriter_.Append(1);
+      bs_->WriteOne();
       oppositebits_--;
     }
   }
   else
   {
-    bwriter_.Append(1);
+    bs_->WriteOne();
     while (oppositebits_ > 0)
     {
-      bwriter_.Append(0);
+      bs_->WriteZero();
       oppositebits_--;
     }
   }
 }
 
-template <typename symbolcontainer>
-void ArithmeticEngine::DecodeASymbol(T& symbol)
+template <typename T>
+T ArithmeticEngine<T>::DecodeASymbol()
 {
+  uint64_t cummu = 0;
+  //  uint64_t l     = 0;
+  //  uint64_t r     = static_cast<uint64_t>(runtimemodel_.size()) - 1;
+  //  uint64_t m     = 0;
+  uint64_t idx = 0;
+
+  range_ = high_ - low_ + 1;
+  cummu  = ((value_ - low_ + 1) * runtimemodel_[0] - 1) / range_;
+
+  // Linear search for the interval this probability falls
+  for (size_t i = 0; i < runtimemodel_.size() - 1; i++)
+  {
+    if (runtimemodel_[i + 1] <= cummu && cummu < runtimemodel_[i])
+      idx = static_cast<T>(i);
+  }
+
+  // Binary Search for the interval this probability falls (6x speedup)
+  // while (runtimemodel_[l] > runtimemodel_[r])
+  // {
+  //   std::cout << "stuck 1" << std::endl;
+  //   m = (l + r) / 2;
+  //   if (cummu > runtimemodel_[m])
+  //   {
+  //     r = m - 1;
+  //   }
+  //   else if (cummu < runtimemodel_[m])
+  //   {
+  //     l = m + 1;
+  //   }
+  //   else
+  //   {
+  //     break;
+  //   }
+  // }
+
+  // if (runtimemodel_[m] == cummu)
+  // {
+  //   while (runtimemodel_[m - 1] == runtimemodel_[m]) m--;
+  //   idx = m - 1;
+  // }
+  // else if (cummu > runtimemodel_[l] && (l == r))
+  // {
+  //   idx = r - 1;
+  // }
+  // else if (cummu < runtimemodel_[l] && (l == r))
+  // {
+  //   idx = r;
+  // }
+  // else if (cummu == runtimemodel_[l] && (l == r))
+  // {
+  //   idx = r - 1;
+  // }
+  // else if (cummu > runtimemodel_[l] && (runtimemodel_[l] < runtimemodel_[r]))
+  // {
+  //   idx = r;
+  // }
+  // else
+  // {
+  //   std::cout << l << " " << r << " " << cummu << runtimemodel_[l] <<
+  //   std::endl;
+  //   std::cout << "some case not considered" << std::endl;
+  // }
+
+  high_ = low_ + (range_ * runtimemodel_[idx]) / runtimemodel_[0] - 1;
+  low_  = low_ + (range_ * runtimemodel_[idx + 1]) / runtimemodel_[0];
+
+  while (true)
+  {
+    if (high_ < kHalfValue_)
+    {
+    }
+    else if (low_ >= kHalfValue_)
+    {
+      value_ -= kHalfValue_;
+      low_ -= kHalfValue_;
+      high_ -= kHalfValue_;
+    }
+    else if (low_ >= kQtrValue_ && high_ < k3QtrValue_)
+    {
+      value_ -= kQtrValue_;
+      low_ -= kQtrValue_;
+      high_ -= kQtrValue_;
+    }
+    else
+    {
+      break;
+    }
+
+    low_  = 2 * low_;
+    high_ = 2 * high_ + 1;
+
+    if (bs_->GetRemSize() > 0)
+    {
+      value_ = (value_ << 1) + static_cast<uint64_t>(bs_->ReadBit());
+    }
+    else
+    {
+      value_ <<= 1;
+    }
+  }
+
+  return static_cast<T>(idx);
 }
 
 }  // namespace Jcy

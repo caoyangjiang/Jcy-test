@@ -40,21 +40,14 @@ class BitStream
   HVR_WINDOWS_DLL_API void Reset();
 
   /**
-   * @brief      Gets the bit buffer. If mode is MODE::RD, this simply returns
-   *             loaded bitstream pointer. If mode is MODE::WR, this returns
-   *             pointer to the written bits.
-   *
-   * @return     The bit buffer.
+   * @brief      Writes zero.
    */
-  HVR_WINDOWS_DLL_API const uint8_t* GetBitBuffer() const;
+  HVR_WINDOWS_DLL_API void WriteZero();
 
   /**
-   * @brief      Gets the size. If mode is MODE::RD, this returns unread bits.
-   *             If mode is MODE::WR, this returns total written bit
-   *
-   * @return     unread bits or total written bits.
+   * @brief      Writes one.
    */
-  HVR_WINDOWS_DLL_API size_t GetSize() const;
+  HVR_WINDOWS_DLL_API void WriteOne();
 
   /**
    * @brief      Write bit(s)
@@ -68,6 +61,20 @@ class BitStream
   HVR_WINDOWS_DLL_API void Write(const uint8_t* bits, size_t bitcount);
 
   /**
+   * @brief      Reads a bit.
+   *
+   * @return     Zero or one.
+   */
+  HVR_WINDOWS_DLL_API uint8_t ReadBit();
+
+  /**
+   * @brief      Read bit without performing length check.
+   *
+   * @return     Zero or one.
+   */
+  HVR_WINDOWS_DLL_API uint8_t UnsafeReadBit();
+
+  /**
    * @brief      If the number of bit left is less than requested or all bits
    *             are consumed, function returns nullptr.
    *
@@ -76,6 +83,15 @@ class BitStream
    * @return     Positive if successful, else nullptr.
    */
   HVR_WINDOWS_DLL_API const uint8_t* Read(size_t bitcount);
+
+  /**
+   * @brief      Similar to Read() except this read do not perform length check.
+   *
+   * @param[in]  bitcount  The requested number of bits.
+   *
+   * @return     Positive if successful, else nullptr.
+   */
+  HVR_WINDOWS_DLL_API const uint8_t* UnsafeRead(size_t bitcount);
 
   /**
    * @brief      To avoid extra copying and allow various external bit buffer
@@ -88,6 +104,38 @@ class BitStream
    * @param[in]  sizes      The sizes
    */
   HVR_WINDOWS_DLL_API void Load(const uint8_t* bits, size_t sizes);
+
+  /**
+   * @brief      Loading bitstream with unknow length. This is unsafe and prone
+   *             to segmentation fault. User is responsible for make sure the
+   *             bit stream is not over read.
+   *
+   * @param[in]  bits  The bit stream
+   */
+  HVR_WINDOWS_DLL_API void Load(const uint8_t* bits);
+
+  /**
+   * @brief      Gets the bit buffer. If mode is MODE::RD, this simply returns
+   *             loaded bitstream pointer. If mode is MODE::WR, this returns
+   *             pointer to the written bits.
+   *
+   * @return     The bit buffer.
+   */
+  HVR_WINDOWS_DLL_API const uint8_t* GetBitBuffer() const;
+
+  /**
+   * @brief      Gets the rem size.
+   *
+   * @return     The rem size.
+   */
+  HVR_WINDOWS_DLL_API size_t GetRemSize() const;
+
+  /**
+   * @brief      Gets the written size.
+   *
+   * @return     The written size.
+   */
+  HVR_WINDOWS_DLL_API size_t GetWrittenSize() const;
 
  private:
   // For writing

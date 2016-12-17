@@ -5,29 +5,39 @@
 
 HVR_WINDOWS_DISABLE_ALL_WARNING
 #include <map>
+#include <memory>
 #include <vector>
 HVR_WINDOWS_ENABLE_ALL_WARNING
 
+#include "Jcy/MiscTools/BitStream.h"
+
 namespace Jcy
 {
-enum PROBABILITYMODEL
-{
-  LOWLOW = 0,
-  LOWMID,
-  LOWHIGH,
-  MIDLOW,
-  MIDMID,
-  MIDHIGH,
-  HIGHLOW,
-  HIGHMID,
-  HIGHHIGH
-}
-
-template <typename symbolcontainer>
+template <typename T>
 class ArithmeticEngine
 {
  public:
-  ArithmeticEngine();
+  enum MODE
+  {
+    ENCODE,
+    DECODE
+  };
+
+  enum PROBABILITYMODEL
+  {
+    LOWLOW = 0,
+    LOWMID,
+    LOWHIGH,
+    MIDLOW,
+    MIDMID,
+    MIDHIGH,
+    HIGHLOW,
+    HIGHMID,
+    HIGHHIGH
+  };
+
+ public:
+  explicit ArithmeticEngine(enum MODE mode);
   ~ArithmeticEngine();
 
   /**
@@ -42,7 +52,7 @@ class ArithmeticEngine
    *
    * @param[in]  emodel  The emodel
    */
-  void LoadProbabilityModel(enum PROBABILITYMODEL emodel);
+  void LoadProbabilityModel(enum PROBABILITYMODEL emodel, uint64_t samplesize);
 
   /**
    * @brief      Encode input symbols.
@@ -50,17 +60,18 @@ class ArithmeticEngine
    * @param[in]  symbols      The symbols
    * @param[in]  totalsymbol  The totalsymbol
    */
-  void Encode(const T* symbols, uint32_t totalsymbol);
+  void Encode(const T* symbols, size_t totalsymbol);
 
   /**
    * @brief      Support 400M number of symbols in the bitstream.
    *
    * @param[in]  bits         The bits
+   * @param[in]  totalbits    The totalbits
    * @param[in]  totalsymbol  The totalsymbol
    *
-   * @return    True if decoding successful, false otherwise.
+   * @return     True if decoding successful, false otherwise.
    */
-  bool Decode(const T* bits, uint32_t totalsymbol);
+  void Decode(const uint8_t* bits, size_t totalbits, size_t totalsymbol);
 
   /**
    * @brief      Clean internal coded bit buffer.
@@ -107,15 +118,15 @@ class ArithmeticEngine
  private:
   void EncodeASymbol(T symbol);
   void EncodeFlush();
-  void DecodeASymbol(T& symbol);
+  T DecodeASymbol();
 
  private:
   std::map<enum PROBABILITYMODEL, std::vector<int>> models_;
   std::vector<uint64_t> runtimemodel_;
   std::vector<uint64_t> backupmodel_;
   std::vector<T> decodedsymbols_;
-  BitReader breader_;
-  BitWriter bwriter_;
+  std::unique_ptr<BitStream> bs_;
+  enum MODE mode_;
 
   uint64_t low_          = 0;
   uint64_t high_         = kTopValue_;
@@ -123,6 +134,8 @@ class ArithmeticEngine
   uint64_t value_        = 0;
   uint64_t range_        = 0;
   uint64_t nextbit_      = 0;
+  uint8_t bytebuffer_    = 0x00;
+  uint8_t bytepos_       = 0x00;
 
   const uint64_t kCodeValueBits_ = 32;
   const uint64_t kTopValue_      = 0xFFFFFFFF;  // (1 << 32) - 1

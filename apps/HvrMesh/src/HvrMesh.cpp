@@ -2,7 +2,7 @@
 
 #include "Jcy/MiscTools/HvrMeshContainer.h"
 
-int main()
+int main(int, char** argv)
 {
   Jcy::HvrMeshFrameCreator creator;
   Jcy::HvrMeshSequenceCreator screator;
@@ -30,11 +30,11 @@ int main()
   creator.Write("M002.hmf");
   creator.Write("M003.hmf");
 
-  screator.Merge("./uv.hms", "./M", 1, 3);
+  screator.Merge("HumanTriUV.hms", "humanTestTriUV", 1, 1);
 
   Jcy::HvrMeshSequenceLoader loader;
 
-  loader.Parse("./humanMerged.hms");
+  loader.Parse(argv[1]);
 
   std::cout << loader.GetHMS().totalframe << std::endl;
   for (int i = 0; i < static_cast<int>(loader.GetHMS().totalframe); i++)

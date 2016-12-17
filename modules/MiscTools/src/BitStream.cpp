@@ -33,6 +33,18 @@ BitStream::~BitStream()
 {
 }
 
+HVR_WINDOWS_DLL_API void BitStream::WriteZero()
+{
+  const uint8_t kZERO = 0x00;
+  Write(&kZERO, 1);
+}
+
+HVR_WINDOWS_DLL_API void BitStream::WriteOne()
+{
+  const uint8_t kONE = 0x01;
+  Write(&kONE, 1);
+}
+
 void BitStream::Write(const uint8_t* bits, size_t size)
 {
   if (endian_ == ENDIAN::LITTLE)
@@ -55,8 +67,9 @@ void BitStream::Write(const uint8_t* bits, size_t size)
       // Fill up last byte
       while ((wrpos_ != 0) && (b != size))
       {
-		  lastbyte = static_cast<uint8_t>(lastbyte | (((bits[b >> 3]) >> (b % 8)) & 0x01) << wrpos_);
-        wrpos_   = (wrpos_ + 1) % 8;
+        lastbyte = static_cast<uint8_t>(
+            lastbyte | (((bits[b >> 3]) >> (b % 8)) & 0x01) << wrpos_);
+        wrpos_ = (wrpos_ + 1) % 8;
         b++;
         bitcounter_++;
       }
@@ -66,8 +79,9 @@ void BitStream::Write(const uint8_t* bits, size_t size)
       {
         if (wrpos_ == 0) wrbuf_.push_back(uint8_t(0x00));
         uint8_t& newbyte = wrbuf_.back();
-        newbyte = static_cast<uint8_t>(newbyte | (((bits[b >> 3]) >> (b % 8)) & 0x01) << wrpos_);
-        wrpos_  = (wrpos_ + 1) % 8;
+        newbyte          = static_cast<uint8_t>(
+            newbyte | (((bits[b >> 3]) >> (b % 8)) & 0x01) << wrpos_);
+        wrpos_ = (wrpos_ + 1) % 8;
         b++;
         bitcounter_++;
       }
@@ -77,6 +91,16 @@ void BitStream::Write(const uint8_t* bits, size_t size)
   {
     std::cout << "Writing big endian not supported ." << std::endl;
   }
+}
+
+HVR_WINDOWS_DLL_API uint8_t BitStream::ReadBit()
+{
+  return *Read(1);
+}
+
+HVR_WINDOWS_DLL_API uint8_t BitStream::UnsafeReadBit()
+{
+  return *Read(1);
 }
 
 const uint8_t* BitStream::Read(size_t size)
@@ -108,8 +132,8 @@ const uint8_t* BitStream::Read(size_t size)
 
       if (rem != 0)
       {
-        rdbuf_.push_back(static_cast<uint8_t>(((static_cast<uint8_t>(1) << rem) - 1) &
-                         (inbuf_[bitcounter_])));
+        rdbuf_.push_back(static_cast<uint8_t>(
+            ((static_cast<uint8_t>(1) << rem) - 1) & (inbuf_[bitcounter_])));
         bitcounter_ += rem;
       }
 
@@ -124,9 +148,10 @@ const uint8_t* BitStream::Read(size_t size)
       {
         if (rdpos_ == 0) rdbuf_.push_back(uint8_t(0x00));
         uint8_t& newbyte = rdbuf_.back();
-        newbyte          = static_cast<uint8_t>(newbyte |
-                  (((inbuf_[bitcounter_ >> 3]) >> (bitcounter_ % 8)) & 0x01)
-                      << rdpos_);
+        newbyte          = static_cast<uint8_t>(
+            newbyte |
+            (((inbuf_[bitcounter_ >> 3]) >> (bitcounter_ % 8)) & 0x01)
+                << rdpos_);
         rdpos_ = (rdpos_ + 1) % 8;
         bitcounter_++;
         b++;
@@ -141,10 +166,75 @@ const uint8_t* BitStream::Read(size_t size)
   return rdbuf_.data();
 }
 
+const uint8_t* BitStream::UnsafeRead(size_t size)
+{
+  rdbuf_.clear();
+
+  if (size > rdbuf_.size())
+  {
+    rdbuf_ = std::move(std::vector<uint8_t>(size));
+  }
+
+  if (endian_ == ENDIAN::LITTLE)
+  {
+    if (rdpos_ == 0)
+    {
+      size_t bytes = size >> 3;
+      size_t rem   = size % 8;
+
+      for (size_t byte = 0; byte < bytes; byte++)
+      {
+        rdbuf_.push_back(inbuf_[bitcounter_ >> 3]);
+        bitcounter_ = bitcounter_ + 8;
+      }
+
+      if (rem != 0)
+      {
+        rdbuf_.push_back(static_cast<uint8_t>(
+            ((static_cast<uint8_t>(1) << rem) - 1) & (inbuf_[bitcounter_])));
+        bitcounter_ += rem;
+      }
+
+      rdpos_ = rem;
+    }
+
+    else
+    {
+      size_t b = 0;
+      // Add new bytes
+      while (b != size)
+      {
+        if (rdpos_ == 0) rdbuf_.push_back(uint8_t(0x00));
+        uint8_t& newbyte = rdbuf_.back();
+        newbyte          = static_cast<uint8_t>(
+            newbyte |
+            (((inbuf_[bitcounter_ >> 3]) >> (bitcounter_ % 8)) & 0x01)
+                << rdpos_);
+        rdpos_ = (rdpos_ + 1) % 8;
+        bitcounter_++;
+        b++;
+      }
+    }
+  }
+  else
+  {
+    std::cout << "Reading big endian not supported. " << std::endl;
+  }
+
+  return rdbuf_.data();
+}
 void BitStream::Load(const uint8_t* bits, size_t size)
 {
   inbuf_      = bits;
   rdsize_     = size;
+  rdpos_      = 0;
+  bitcounter_ = 0;
+}
+
+void BitStream::Load(const uint8_t* bits)
+{
+  inbuf_      = bits;
+  rdsize_     = -1;
   rdpos_      = 0;
   bitcounter_ = 0;
 }
@@ -175,12 +265,15 @@ const uint8_t* BitStream::GetBitBuffer() const
   return nullptr;
 }
 
-size_t BitStream::GetSize() const
+size_t BitStream::GetRemSize() const
 {
-  if (mode_ == MODE::RD)
-    return rdsize_ - bitcounter_;
-  else if (mode_ == MODE::WR)
-    return bitcounter_;
+  if (mode_ == MODE::RD) return rdsize_ - bitcounter_;
+  return 0;
+}
+
+size_t BitStream::GetWrittenSize() const
+{
+  if (mode_ == MODE::WR) return bitcounter_;
 
   return 0;
 }
