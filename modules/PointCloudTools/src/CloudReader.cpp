@@ -1,7 +1,9 @@
 // Copyright @ 2016 Caoyang Jiang
 
+HVR_WINDOWS_DISABLE_ALL_WARNING
 #include "Jcy/PointCloudTools/CloudReader.h"
 #include <string>
+HVR_WINDOWS_ENABLE_ALL_WARNING
 
 namespace Jcy
 {

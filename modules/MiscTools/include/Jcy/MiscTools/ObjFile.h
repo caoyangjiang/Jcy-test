@@ -19,11 +19,11 @@ typedef struct Vertice
 class ObjFile
 {
  public:
-  ObjFile();
-  ~ObjFile();
+  HVR_WINDOWS_DLL_API ObjFile();
+  HVR_WINDOWS_DLL_API ~ObjFile();
 
   template <class T>
-  void SaveObjFile(const std::string& filename,
+  HVR_WINDOWS_DLL_API void SaveObjFile(const std::string& filename,
                    const std::string& mtlname,
                    const std::vector<Vertice>& vb,
                    const std::vector<Vertice>& uvb,
@@ -59,7 +59,7 @@ class ObjFile
   }
 
   template <class T>
-  void SaveObjFileTrunc(const std::string& filename,
+  HVR_WINDOWS_DLL_API void SaveObjFileTrunc(const std::string& filename,
                         const std::string& mtlname,
                         const std::vector<Vertice>& vb,
                         const std::vector<Vertice>& uvb,

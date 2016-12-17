@@ -38,15 +38,15 @@ struct HvrMeshSequence
 class HvrMeshFrameCreator
 {
  public:
-  HvrMeshFrameCreator();
-  ~HvrMeshFrameCreator();
+  HVR_WINDOWS_DLL_API HvrMeshFrameCreator();
+  HVR_WINDOWS_DLL_API ~HvrMeshFrameCreator();
 
   /**
    * @brief      Adds a vertex.
    *
    * @param[in]  vertex  The vertex
    */
-  void AddVertex(const std::vector<float>& vertex);
+  HVR_WINDOWS_DLL_API void AddVertex(const std::vector<float>& vertex);
 
   /**
    * @brief      Write vertex buffer to output. Use output file extension name
@@ -54,7 +54,7 @@ class HvrMeshFrameCreator
    *
    * @param[in]  filename  The filename
    */
-  void Write(const std::string& filename);
+  HVR_WINDOWS_DLL_API void Write(const std::string& filename);
 
  private:
   std::vector<std::vector<float>> vertices_;
@@ -63,8 +63,8 @@ class HvrMeshFrameCreator
 class HvrMeshSequenceCreator
 {
  public:
-  HvrMeshSequenceCreator();
-  ~HvrMeshSequenceCreator();
+  HVR_WINDOWS_DLL_API HvrMeshSequenceCreator();
+  HVR_WINDOWS_DLL_API ~HvrMeshSequenceCreator();
 
   /**
    * @brief      Merge all HvrMesh frames into HvrMesh sequence. Use output file
@@ -76,7 +76,7 @@ class HvrMeshSequenceCreator
    * @param[in]  first            The first frame id.
    * @param[in]  last             The last frame id.
    */
-  void Merge(const std::string& outputfilename,
+  HVR_WINDOWS_DLL_API void Merge(const std::string& outputfilename,
              const std::string& inputfileprefix,
              int first,
              int last);
@@ -85,8 +85,8 @@ class HvrMeshSequenceCreator
 class HvrMeshSequenceLoader
 {
  public:
-  HvrMeshSequenceLoader();
-  ~HvrMeshSequenceLoader();
+  HVR_WINDOWS_DLL_API HvrMeshSequenceLoader();
+  HVR_WINDOWS_DLL_API ~HvrMeshSequenceLoader();
 
   /**
    * @brief      Parse a HvrMeshSequence file.
@@ -95,16 +95,18 @@ class HvrMeshSequenceLoader
    *
    * @return     True if parsing successful, false otherwise;
    */
-  bool Parse(const std::string& filename);
+  HVR_WINDOWS_DLL_API bool Parse(const std::string& filename);
+  
+  
   template <typename T>
-  std::vector<std::vector<T>> GetVertexByFrameID(int frameid);
+  HVR_WINDOWS_DLL_API std::vector<std::vector<T>> GetVertexByFrameID(int frameid);
 
   /**
    * @brief      Gets the HvrMeshFrame.
    *
    * @return     The HvrMeshFrame.
    */
-  const HvrMeshSequence& GetHMS() const;
+  HVR_WINDOWS_DLL_API const HvrMeshSequence& GetHMS() const;
 
  private:
   HvrMeshSequence hms_;

@@ -161,8 +161,8 @@ template <typename T>
 void ArithmeticEngine<T>::EncodeASymbol(T symbol)
 {
   range_ = high_ - low_ + 1;
-  high_  = low_ + (range_ * runtimemodel_[symbol]) / runtimemodel_[0] - 1;
-  low_   = low_ + (range_ * runtimemodel_[symbol + 1]) / runtimemodel_[0];
+  high_  = low_ + (range_ * runtimemodel_[static_cast<size_t>(symbol)]) / runtimemodel_[0] - 1;
+  low_   = low_ + (range_ * runtimemodel_[static_cast<size_t>(symbol) + 1]) / runtimemodel_[0];
 
   while (true)
   {
@@ -293,8 +293,8 @@ T ArithmeticEngine<T>::DecodeASymbol()
   //   std::cout << "some case not considered" << std::endl;
   // }
 
-  high_ = low_ + (range_ * runtimemodel_[idx]) / runtimemodel_[0] - 1;
-  low_  = low_ + (range_ * runtimemodel_[idx + 1]) / runtimemodel_[0];
+  high_ = low_ + (range_ * runtimemodel_[static_cast<size_t>(idx)]) / runtimemodel_[0] - 1;
+  low_  = low_ + (range_ * runtimemodel_[static_cast<size_t>(idx) + 1]) / runtimemodel_[0];
 
   while (true)
   {

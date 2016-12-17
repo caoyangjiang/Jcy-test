@@ -37,22 +37,22 @@ class ArithmeticEngine
   };
 
  public:
-  explicit ArithmeticEngine(enum MODE mode);
-  ~ArithmeticEngine();
+  HVR_WINDOWS_DLL_API explicit ArithmeticEngine(enum MODE mode);
+  HVR_WINDOWS_DLL_API ~ArithmeticEngine();
 
   /**
    * @brief      Loads a probability model externally.
    *
    * @param[in]  frequency  The frequency
    */
-  void LoadProbabilityModel(const std::vector<uint64_t>& frequency);
+  HVR_WINDOWS_DLL_API void LoadProbabilityModel(const std::vector<uint64_t>& frequency);
 
   /**
    * @brief      Loads a probability model internally
    *
    * @param[in]  emodel  The emodel
    */
-  void LoadProbabilityModel(enum PROBABILITYMODEL emodel, uint64_t samplesize);
+  HVR_WINDOWS_DLL_API void LoadProbabilityModel(enum PROBABILITYMODEL emodel, uint64_t samplesize);
 
   /**
    * @brief      Encode input symbols.
@@ -60,7 +60,7 @@ class ArithmeticEngine
    * @param[in]  symbols      The symbols
    * @param[in]  totalsymbol  The totalsymbol
    */
-  void Encode(const T* symbols, size_t totalsymbol);
+  HVR_WINDOWS_DLL_API void Encode(const T* symbols, size_t totalsymbol);
 
   /**
    * @brief      Support 400M number of symbols in the bitstream.
@@ -71,49 +71,49 @@ class ArithmeticEngine
    *
    * @return     True if decoding successful, false otherwise.
    */
-  void Decode(const uint8_t* bits, size_t totalbits, size_t totalsymbol);
+  HVR_WINDOWS_DLL_API void Decode(const uint8_t* bits, size_t totalbits, size_t totalsymbol);
 
   /**
    * @brief      Clean internal coded bit buffer.
    */
-  void ResetBitBuffer();
+  HVR_WINDOWS_DLL_API void ResetBitBuffer();
 
   /**
    * @brief      Clean internal decoded symbol buffer.
    */
-  void ResetSymBuffer();
+  HVR_WINDOWS_DLL_API void ResetSymBuffer();
 
   /**
    * @brief      Restart arithmetic engine to initial state (not probability
    *             model if adaptive is selected.)
    */
-  void ResetEngineState();
+  HVR_WINDOWS_DLL_API void ResetEngineState();
 
   /**
    * @brief      Reset probability model to initial state.
    */
-  void ResetProbabilityModel();
+  HVR_WINDOWS_DLL_API void ResetProbabilityModel();
 
   /**
    * @brief      Gets the coded bits.
    *
    * @return     The coded bits.
    */
-  const char* GetCodedBits() const;
+  HVR_WINDOWS_DLL_API const char* GetCodedBits() const;
 
   /**
    * @brief      Gets the coded bits count.
    *
    * @return     The coded bits count.
    */
-  size_t GetCodedBitsCount() const;
+  HVR_WINDOWS_DLL_API size_t GetCodedBitsCount() const;
 
   /**
    * @brief      Gets the decoded symbols.
    *
    * @return     The decoded symbols.
    */
-  const T* GetDecodedSymbols() const;
+  HVR_WINDOWS_DLL_API const T* GetDecodedSymbols() const;
 
  private:
   void EncodeASymbol(T symbol);

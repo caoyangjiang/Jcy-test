@@ -21,7 +21,7 @@ bool DdsWriter::Write(const std::string& dxtfile,
   ifs.open(ofile, std::ios::in | std::ios::binary);
   dds.header.dwHeight = static_cast<DWORD>(width);   // 2048
   dds.header.dwWidth  = static_cast<DWORD>(height);  // 8192
-  buf                 = std::make_unique<uint8_t[]>(width * height / 2);
+  buf                 = std::make_unique<uint8_t[]>(static_cast<size_t>(width * height / 2));
   ifs.read(reinterpret_cast<char*>(buf.get()), width * height / 2);
   ofs.write(reinterpret_cast<const char*>(&dds), sizeof(DDS));
   ofs.close();

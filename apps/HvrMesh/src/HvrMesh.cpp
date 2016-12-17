@@ -43,9 +43,9 @@ int main(int, char** argv)
     vbuf = loader.GetVertexByFrameID<float>(i);
     std::cout << "Frame " << i << " has" << vbuf.size() << std::endl;
 
-    for (int v = 0; v < static_cast<int>(vbuf.size()); v++)
+    for (size_t v = 0; v < vbuf.size(); v++)
     {
-      for (int e = 0; e < static_cast<int>(vbuf[v].size()); e++)
+      for (size_t e = 0; e <  vbuf[v].size(); e++)
       {
         std::cout << vbuf[v][e] << " ";
       }

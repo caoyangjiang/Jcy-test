@@ -234,7 +234,7 @@ void BitStream::Load(const uint8_t* bits, size_t size)
 void BitStream::Load(const uint8_t* bits)
 {
   inbuf_      = bits;
-  rdsize_     = -1;
+  rdsize_     = 0;
   rdpos_      = 0;
   bitcounter_ = 0;
 }
