@@ -121,12 +121,19 @@ class ArithmeticEngine
   T DecodeASymbol();
 
  private:
+  const uint64_t kCodeValueBits_ = 32;
+  const uint64_t kTopValue_ = 0xFFFFFFFF;  // (1 << 32) - 1
+  const uint64_t kQtrValue_ = 0x40000000;  // (top / 4) + 1
+  const uint64_t kHalfValue_ = 0x80000000;  // (2 * Qtr)
+  const uint64_t k3QtrValue_ = 0xC0000000;  // (3 * Qtr)
+
   std::map<enum PROBABILITYMODEL, std::vector<int>> models_;
   std::vector<uint64_t> runtimemodel_;
   std::vector<uint64_t> backupmodel_;
   std::vector<T> decodedsymbols_;
   std::unique_ptr<BitStream> bs_;
   enum MODE mode_;
+
 
   uint64_t low_          = 0;
   uint64_t high_         = kTopValue_;
@@ -137,11 +144,7 @@ class ArithmeticEngine
   uint8_t bytebuffer_    = 0x00;
   uint8_t bytepos_       = 0x00;
 
-  const uint64_t kCodeValueBits_ = 32;
-  const uint64_t kTopValue_      = 0xFFFFFFFF;  // (1 << 32) - 1
-  const uint64_t kQtrValue_      = 0x40000000;  // (top / 4) + 1
-  const uint64_t kHalfValue_     = 0x80000000;  // (2 * Qtr)
-  const uint64_t k3QtrValue_     = 0xC0000000;  // (3 * Qtr)
+
 };
 
 }  // namespace Jcy

@@ -8,18 +8,18 @@
 
 int main()
 {
-  Jcy::ArithmeticEngine<uint32_t> ae(
-      Jcy::ArithmeticEngine<uint32_t>::MODE::ENCODE);
-  Jcy::ArithmeticEngine<uint32_t> ad(
-      Jcy::ArithmeticEngine<uint32_t>::MODE::DECODE);
+  Jcy::ArithmeticEngine<uint16_t> ae(
+      Jcy::ArithmeticEngine<uint16_t>::MODE::ENCODE);
+  Jcy::ArithmeticEngine<uint16_t> ad(
+      Jcy::ArithmeticEngine<uint16_t>::MODE::DECODE);
 
-  std::vector<uint32_t> symbols;
+  std::vector<uint16_t> symbols;
   std::vector<uint64_t> freq;
-  const size_t totalsymbol = 100;
+  const size_t totalsymbol = 5;
 
   for (size_t i = 0; i < totalsymbol; i++)
   {
-    symbols.push_back(i);
+    symbols.push_back(static_cast<uint8_t>(i));
     freq.push_back(1);
   }
 
@@ -29,7 +29,7 @@ int main()
 
   beg = std::chrono::high_resolution_clock::now();
   ae.LoadProbabilityModel(freq);
-  ae.Encode(reinterpret_cast<const uint32_t*>(symbols.data()), totalsymbol);
+  ae.Encode(reinterpret_cast<const uint16_t*>(symbols.data()), totalsymbol);
   end = std::chrono::high_resolution_clock::now();
 
   milliseconds = end - beg;
@@ -38,8 +38,7 @@ int main()
   std::cout << "Bits: " << ae.GetCodedBitsCount() << std::endl;
   for (size_t i = 0; i < (ae.GetCodedBitsCount() + 7) / 8; i++)
   {
-    std::cout << std::hex << static_cast<uint32_t>(*(ae.GetCodedBits() + i))
-              << " ";
+    std::printf("%x ",*(ae.GetCodedBits() + i));
   }
   ad.LoadProbabilityModel(freq);
   ad.Decode(reinterpret_cast<const uint8_t*>(ae.GetCodedBits()),

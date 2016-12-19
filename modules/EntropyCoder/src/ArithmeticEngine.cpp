@@ -134,9 +134,11 @@ void ArithmeticEngine<T>::Decode(const uint8_t* bits,
   size_t symcnt = 0;
   while (symcnt != totalsymbol)
   {
-    std::cout << DecodeASymbol() << std::endl;
+	  std::cout << DecodeASymbol();
     symcnt++;
   }
+
+  std::cout << std::endl;
 }
 
 template <typename T>
@@ -146,7 +148,7 @@ const char* ArithmeticEngine<T>::GetCodedBits() const
 }
 
 template <typename T>
-size_t ArithmeticEngine<T>::GetCodedBitsCount() const
+size_t ArithmeticEngine<T>::GetCodedBitsCount() const 
 {
   return bs_->GetWrittenSize();
 }
@@ -323,11 +325,11 @@ T ArithmeticEngine<T>::DecodeASymbol()
 
     if (bs_->GetRemSize() > 0)
     {
-      value_ = (value_ << 1) + static_cast<uint64_t>(bs_->ReadBit());
+      value_ = (2 * value_) + static_cast<uint64_t>(bs_->ReadBit());
     }
     else
     {
-      value_ <<= 1;
+      value_ = 2 * value_;
     }
   }
 
