@@ -23,22 +23,22 @@ class VideoEncoder
     cplanesize_ = width * height / 4;
     uplaneos_   = width * height;
     vplaneos_   = width * height * 5 / 4;
-    bs_.reserve(1000000); 
+    bs_.reserve(1000000);
 
-	x264_param_default_preset(&param_, "veryfast", "zerolatency");
-	param_.i_csp = X264_CSP_I420;
-    param_.i_width           = width;
-    param_.i_height          = height;
-    param_.i_bframe          = 0;
-    param_.i_fps_num         = static_cast<uint32_t>(framerate);
-    param_.i_fps_den         = 1;
-    param_.b_vfr_input       = 0;
-    param_.i_keyint_max      = 100;
-    param_.i_frame_reference = 4;
-    param_.b_full_recon      = 1;
+    x264_param_default_preset(&param_, "medium", "zerolatency");
+    param_.i_csp               = X264_CSP_I420;
+    param_.i_width             = width;
+    param_.i_height            = height;
+    param_.i_bframe            = 0;
+    param_.i_fps_num           = static_cast<uint32_t>(framerate);
+    param_.i_fps_den           = 1;
+    param_.b_vfr_input         = 0;
+    param_.i_keyint_max        = 100;
+    param_.i_frame_reference   = 8;
+    param_.b_full_recon        = 1;
+    param_.b_cabac             = 1;
+    param_.b_deblocking_filter = 0;
 
-    // Rate control params
-    param_.i_scenecut_threshold = 40;
     // param_.i_level_idc          = 51;
     param_.rc.i_rc_method   = X264_RC_CQP;
     param_.rc.i_qp_constant = 24;
@@ -50,11 +50,14 @@ class VideoEncoder
     param_.b_annexb = 1;
     param_.b_aud    = 1;
 
-    x264_param_apply_profile(&param_, "high");
-    
-	x264_picture_alloc(&picin_, X264_CSP_I420, width, height);
+    // Analyze
+    param_.analyse.i_weighted_pred = 0;
+    param_.analyse.b_fast_pskip    = 1;
 
-	encoder_ = x264_encoder_open(&param_);
+    x264_param_apply_profile(&param_, "high");
+    x264_picture_alloc(&picin_, X264_CSP_I420, width, height);
+
+    encoder_ = x264_encoder_open(&param_);
 
     if (!encoder_)
     {
@@ -79,15 +82,19 @@ class VideoEncoder
   bool EncodeAFrame(const uint8_t* buffer)
   {
     std::memcpy(picin_.img.plane[0], buffer, static_cast<size_t>(lplanesize_));
-    std::memcpy(picin_.img.plane[1], buffer + uplaneos_, static_cast<size_t>(cplanesize_));
-    std::memcpy(picin_.img.plane[2], buffer + vplaneos_, static_cast<size_t>(cplanesize_));
+    std::memcpy(picin_.img.plane[1],
+                buffer + uplaneos_,
+                static_cast<size_t>(cplanesize_));
+    std::memcpy(picin_.img.plane[2],
+                buffer + vplaneos_,
+                static_cast<size_t>(cplanesize_));
 
     int nalcnt   = 0;
     int nalbytes = 0;
 
     if ((framecnt_ % gopsize_) == 0)
     {
-      picin_.i_type = X264_TYPE_I;
+      picin_.i_type = X264_TYPE_IDR;
     }
     else
     {
@@ -110,6 +117,8 @@ class VideoEncoder
         bs_.push_back(nal_[inal].p_payload[b]);
       }
     }
+
+    framecnt_++;
     return true;
   }
 
@@ -148,7 +157,7 @@ int main(int argc, char* argv[])
   int width    = 2048;
   int height   = 4096;
   std::unique_ptr<uint8_t[]> buf =
-  std::make_unique<uint8_t[]>(static_cast<size_t>(width * height * 3 / 2));
+      std::make_unique<uint8_t[]>(static_cast<size_t>(width * height * 3 / 2));
 
   if (argc < 3)
   {
@@ -173,7 +182,8 @@ int main(int argc, char* argv[])
     ifs.read(reinterpret_cast<char*>(buf.get()), width * height * 3 / 2);
     encoder.EncodeAFrame(buf.get());
     encoder.GetBitStream(bs, size);
-    ofs.write(reinterpret_cast<const char*>(bs), static_cast<std::streamsize>(size));
+    ofs.write(reinterpret_cast<const char*>(bs),
+              static_cast<std::streamsize>(size));
   }
 
   ofs.close();
