@@ -17,7 +17,7 @@ add_subdirectory(MatrixTest)
 #add_subdirectory(SimpleAVCAnalyzer)
 #add_subdirectory(ThreadPool)
 
-
+add_subdirectory(SimpleX264)
 #add_subdirectory(AvxTest) # Require archiecture support
 #add_subdirectory(BitOp) # Require Boost
 #add_subdirectory(BufferDecoder) # Require FFmpeg
