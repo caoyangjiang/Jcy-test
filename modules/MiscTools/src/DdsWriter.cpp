@@ -12,7 +12,7 @@ bool DdsWriter::Write(const std::string& dxtfile,
                       const std::string& ofile)
 {
   DDS dds;
-  printf("%ld", sizeof(DDS));
+//  printf("%ld", sizeof(DDS));
   std::ofstream ofs;
   std::ifstream ifs;
   std::unique_ptr<uint8_t[]> buf;

@@ -26,13 +26,13 @@ void HvrMeshFrameCreator::Write(const std::string& filename)
   frame.datatype = 0;
   frame.chlayout = 0;
   frame.numch    = static_cast<uint8_t>(vertices_[0].size());
-  frame.datasize = frame.numch * sizeof(float) * vertices_.size();
+  frame.datasize = static_cast<uint32_t>(frame.numch * sizeof(float) * vertices_.size());
 
   ofs.write(reinterpret_cast<const char*>(&frame), sizeof(HvrMeshFrame));
   for (size_t v = 0; v < vertices_.size(); v++)
   {
     ofs.write(reinterpret_cast<const char*>(vertices_[v].data()),
-              frame.numch * sizeof(float));
+              static_cast<std::streamsize>(frame.numch * sizeof(float)));
   }
   ofs.close();
 }
@@ -198,7 +198,7 @@ std::vector<std::vector<T>> HvrMeshSequenceLoader::GetVertexByFrameID(
   {
     std::vector<T> vt;
     vt.resize(hms_.numch);
-    ifs_.read(reinterpret_cast<char*>(vt.data()), sizeof(T) * hms_.numch);
+    ifs_.read(reinterpret_cast<char*>(vt.data()), static_cast<std::streamsize>(sizeof(T) * hms_.numch));
     vbuf.push_back(vt);
   }
   return vbuf;

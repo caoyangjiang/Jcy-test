@@ -1,5 +1,6 @@
 // Copyright @ 2016 Caoyang Jiang
 
+HVR_WINDOWS_DISABLE_ALL_WARNING
 #include <stdint.h>
 #include <x264.h>
 #include <cstring>
@@ -7,6 +8,8 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+HVR_WINDOWS_ENABLE_ALL_WARNING
+
 class VideoEncoder
 {
  public:
@@ -20,16 +23,14 @@ class VideoEncoder
     cplanesize_ = width * height / 4;
     uplaneos_   = width * height;
     vplaneos_   = width * height * 5 / 4;
-    bs_.reserve(1000000);
+    bs_.reserve(1000000); 
 
-    x264_picture_alloc(&picin_, X264_CSP_I420, width, height);
-    x264_param_default(&param_);
-    // x264_picture_init(&picin_);
-
+	x264_param_default_preset(&param_, "veryfast", "zerolatency");
+	param_.i_csp = X264_CSP_I420;
     param_.i_width           = width;
     param_.i_height          = height;
     param_.i_bframe          = 0;
-    param_.i_fps_num         = framerate;
+    param_.i_fps_num         = static_cast<uint32_t>(framerate);
     param_.i_fps_den         = 1;
     param_.b_vfr_input       = 0;
     param_.i_keyint_max      = 100;
@@ -50,7 +51,10 @@ class VideoEncoder
     param_.b_aud    = 1;
 
     x264_param_apply_profile(&param_, "high");
-    encoder_ = x264_encoder_open(&param_);
+    
+	x264_picture_alloc(&picin_, X264_CSP_I420, width, height);
+
+	encoder_ = x264_encoder_open(&param_);
 
     if (!encoder_)
     {
@@ -74,10 +78,9 @@ class VideoEncoder
 
   bool EncodeAFrame(const uint8_t* buffer)
   {
-    std::memcpy(picin_.img.plane[0], buffer, lplanesize_);
-
-    std::memcpy(picin_.img.plane[1], buffer + uplaneos_, cplanesize_);
-    std::memcpy(picin_.img.plane[2], buffer + vplaneos_, cplanesize_);
+    std::memcpy(picin_.img.plane[0], buffer, static_cast<size_t>(lplanesize_));
+    std::memcpy(picin_.img.plane[1], buffer + uplaneos_, static_cast<size_t>(cplanesize_));
+    std::memcpy(picin_.img.plane[2], buffer + vplaneos_, static_cast<size_t>(cplanesize_));
 
     int nalcnt   = 0;
     int nalbytes = 0;
@@ -110,7 +113,7 @@ class VideoEncoder
     return true;
   }
 
-  void GetBitStream(const uint8_t*& bitstream, int& bssize)
+  void GetBitStream(const uint8_t*& bitstream, size_t& bssize)
   {
     bitstream = bs_.data();
     bssize    = bs_.size();
@@ -145,7 +148,7 @@ int main(int argc, char* argv[])
   int width    = 2048;
   int height   = 4096;
   std::unique_ptr<uint8_t[]> buf =
-      std::make_unique<uint8_t[]>(width * height * 3 / 2);
+  std::make_unique<uint8_t[]>(static_cast<size_t>(width * height * 3 / 2));
 
   if (argc < 3)
   {
@@ -165,12 +168,12 @@ int main(int argc, char* argv[])
 
   for (int i = 0; i < framecnt; i++)
   {
-    int size;
+    size_t size;
     const uint8_t* bs;
     ifs.read(reinterpret_cast<char*>(buf.get()), width * height * 3 / 2);
     encoder.EncodeAFrame(buf.get());
     encoder.GetBitStream(bs, size);
-    ofs.write(reinterpret_cast<const char*>(bs), size);
+    ofs.write(reinterpret_cast<const char*>(bs), static_cast<std::streamsize>(size));
   }
 
   ofs.close();
