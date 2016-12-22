@@ -5,8 +5,8 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <vector>
-
 class VideoEncoder
 {
  public:
@@ -24,7 +24,7 @@ class VideoEncoder
 
     x264_picture_alloc(&picin_, X264_CSP_I420, width, height);
     x264_param_default(&param_);
-    x264_picture_init(&picin_);
+    // x264_picture_init(&picin_);
 
     param_.i_width           = width;
     param_.i_height          = height;
@@ -38,9 +38,9 @@ class VideoEncoder
 
     // Rate control params
     param_.i_scenecut_threshold = 40;
-    param_.i_level_idc          = 51;
-    param_.rc.i_rc_method       = X264_RC_CQP;
-    param_.rc.i_qp_constant     = 24;
+    // param_.i_level_idc          = 51;
+    param_.rc.i_rc_method   = X264_RC_CQP;
+    param_.rc.i_qp_constant = 24;
     // param.rc.i_qp_min          = 24;
     // param.rc.i_qp_max          = 24;
     // param.rc.i_bitrate         = 1500;
@@ -57,9 +57,6 @@ class VideoEncoder
       std::cout << "Create encoder failed." << std::endl;
       return false;
     }
-
-    picin_.img.i_csp   = X264_CSP_YV12;
-    picin_.img.i_plane = 3;
 
     return true;
   }
@@ -78,6 +75,7 @@ class VideoEncoder
   bool EncodeAFrame(const uint8_t* buffer)
   {
     std::memcpy(picin_.img.plane[0], buffer, lplanesize_);
+
     std::memcpy(picin_.img.plane[1], buffer + uplaneos_, cplanesize_);
     std::memcpy(picin_.img.plane[2], buffer + vplaneos_, cplanesize_);
 
@@ -93,8 +91,7 @@ class VideoEncoder
       picin_.i_type = X264_TYPE_P;
     }
 
-    nalbytes = x264_encoder_encode(encoder_, &nal_, &nalcnt, &picin_, nullptr);
-
+    nalbytes = x264_encoder_encode(encoder_, &nal_, &nalcnt, &picin_, &picout_);
     if (nalbytes < 0)
     {
       std::cout << "Encode frame failed on " << framecnt_ << std::endl;
@@ -110,6 +107,7 @@ class VideoEncoder
         bs_.push_back(nal_[inal].p_payload[b]);
       }
     }
+    return true;
   }
 
   void GetBitStream(const uint8_t*& bitstream, int& bssize)
@@ -132,6 +130,7 @@ class VideoEncoder
   x264_param_t param_;
   x264_t* encoder_;
   x264_picture_t picin_;
+  x264_picture_t picout_;
   x264_picture_t picout;
   x264_nal_t* nal_;
   std::vector<uint8_t> bs_;
@@ -142,19 +141,39 @@ int main(int argc, char* argv[])
   VideoEncoder encoder;
   std::ifstream ifs;
   std::ofstream ofs;
+  int framecnt = 0;
+  int width    = 2048;
+  int height   = 4096;
+  std::unique_ptr<uint8_t[]> buf =
+      std::make_unique<uint8_t[]>(width * height * 3 / 2);
 
-  if (argc < 2)
+  if (argc < 3)
   {
-    std::cout << "Not enough argument" << std::endl;
+    std::cout << "SimpleX264 Input.yuv #frame" << std::endl;
     return -1;
   }
 
-  if (!encoder.Initialize(8192, 2048, 100, 45))
+  framecnt = std::atoi(argv[2]);
+
+  if (!encoder.Initialize(width, height, 100, 45))
   {
     return -1;
   }
 
   ifs.open(argv[1], std::ios::in | std::ios::binary);
+  ofs.open("output.h264", std::ios::out | std::ios::binary | std::ios::trunc);
+
+  for (int i = 0; i < framecnt; i++)
+  {
+    int size;
+    const uint8_t* bs;
+    ifs.read(reinterpret_cast<char*>(buf.get()), width * height * 3 / 2);
+    encoder.EncodeAFrame(buf.get());
+    encoder.GetBitStream(bs, size);
+    ofs.write(reinterpret_cast<const char*>(bs), size);
+  }
+
+  ofs.close();
   ifs.close();
   return 0;
 }
