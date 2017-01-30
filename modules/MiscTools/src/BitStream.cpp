@@ -51,35 +51,38 @@ void BitStream::Write(const uint8_t* bits, size_t size)
   {
     if (bitcounter_ == 0)  // internal buffer already byte-aligned
     {
-	  size_t bytes = size >> 3;
-	  size_t rem = size % 8;
+      size_t bytes = size >> 3;
+      size_t rem   = size % 8;
 
       for (size_t byte = 0; byte < bytes; byte++)
       {
         wrbuf_.push_back(bits[byte]);
       }
 
-	  if (rem != 0)
-	  {
-		  wrbuf_.push_back(static_cast<uint8_t>(
-			  ((static_cast<uint8_t>(1) << rem) - 1) & (bits[bytes])));
-	  }
+      if (rem != 0)
+      {
+        wrbuf_.push_back(static_cast<uint8_t>(
+            ((static_cast<uint8_t>(1) << rem) - 1) & (bits[bytes])));
+      }
       bitcounter_ += size;
     }
     else
     {
-      size_t b     = 0;
+      size_t b = 0;
       // Add new bytes
       while (b != size)
       {
-        if (bitcounter_ % 8 == 0) {
-			wrbuf_.push_back(uint8_t(0));
-		}
+        if (bitcounter_ % 8 == 0)
+        {
+          wrbuf_.push_back(uint8_t(0));
+        }
 
         uint8_t& newbyte = wrbuf_.back();
-		newbyte = static_cast<uint8_t>(newbyte | (((((bits[b >> 3]) >> (b % 8)) & 0x01)) << (bitcounter_ % 8)));
- 		b++;
-		bitcounter_++;
+        newbyte          = static_cast<uint8_t>(
+            newbyte |
+            (((((bits[b >> 3]) >> (b % 8)) & 0x01)) << (bitcounter_ % 8)));
+        b++;
+        bitcounter_++;
       }
     }
   }
@@ -123,33 +126,33 @@ const uint8_t* BitStream::Read(size_t size)
 
       if (rem != 0)
       {
-        rdbuf_.push_back(static_cast<uint8_t>(
-            ((static_cast<uint8_t>(1) << rem) - 1) & (inbuf_[bitcounter_])));
+        rdbuf_.push_back(
+            static_cast<uint8_t>(((static_cast<uint8_t>(1) << rem) - 1) &
+                                 (inbuf_[(bitcounter_ >> 3)])));
         bitcounter_ += rem;
       }
     }
-
     else
     {
-      size_t b = 0;
-	  size_t rdpos = 0;
+      size_t b     = 0;
+      size_t rdpos = 0;
       // Add new bytes
       while (b != size)
       {
-		  if ((b % 8) == 0)
-		  {
-			  rdbuf_.push_back(uint8_t(0x00));
-			  rdpos = 0;
-		  }
+        if ((b % 8) == 0)
+        {
+          rdbuf_.push_back(uint8_t(0x00));
+          rdpos = 0;
+        }
+
+        size_t bytes = bitcounter_ >> 3;
+        size_t rem   = bitcounter_ % 8;
 
         uint8_t& newbyte = rdbuf_.back();
-        newbyte          = static_cast<uint8_t>(
-            newbyte |
-            (((inbuf_[bitcounter_ >> 3]) >> (bitcounter_ % 8)) & 0x01)
-                << rdpos);
+        newbyte = newbyte | (((inbuf_[bytes]) >> (rem)) & 0x01) << rdpos;
         bitcounter_++;
         b++;
-		rdpos++;
+        rdpos++;
       }
     }
   }

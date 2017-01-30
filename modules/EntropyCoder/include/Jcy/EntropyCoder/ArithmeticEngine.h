@@ -45,14 +45,16 @@ class ArithmeticEngine
    *
    * @param[in]  frequency  The frequency
    */
-  HVR_WINDOWS_DLL_API void LoadProbabilityModel(const std::vector<uint64_t>& frequency);
+  HVR_WINDOWS_DLL_API void LoadProbabilityModel(
+      const std::vector<uint64_t>& frequency);
 
   /**
    * @brief      Loads a probability model internally
    *
    * @param[in]  emodel  The emodel
    */
-  HVR_WINDOWS_DLL_API void LoadProbabilityModel(enum PROBABILITYMODEL emodel, uint64_t samplesize);
+  HVR_WINDOWS_DLL_API void LoadProbabilityModel(enum PROBABILITYMODEL emodel,
+                                                uint64_t samplesize);
 
   /**
    * @brief      Encode input symbols.
@@ -71,7 +73,9 @@ class ArithmeticEngine
    *
    * @return     True if decoding successful, false otherwise.
    */
-  HVR_WINDOWS_DLL_API void Decode(const uint8_t* bits, size_t totalbits, size_t totalsymbol);
+  HVR_WINDOWS_DLL_API void Decode(const uint8_t* bits,
+                                  size_t totalbits,
+                                  size_t totalsymbol);
 
   /**
    * @brief      Clean internal coded bit buffer.
@@ -115,6 +119,13 @@ class ArithmeticEngine
    */
   HVR_WINDOWS_DLL_API const T* GetDecodedSymbols() const;
 
+  /**
+   * @brief      Gets the number of  symbols.
+   *
+   * @return     Number of decoded symbols.
+   */
+  HVR_WINDOWS_DLL_API size_t GetDecodedSymbolCount() const;
+
  private:
   void EncodeASymbol(T symbol);
   void EncodeFlush();
@@ -122,10 +133,10 @@ class ArithmeticEngine
 
  private:
   const uint64_t kCodeValueBits_ = 32;
-  const uint64_t kTopValue_ = 0xFFFFFFFF;  // (1 << 32) - 1
-  const uint64_t kQtrValue_ = 0x40000000;  // (top / 4) + 1
-  const uint64_t kHalfValue_ = 0x80000000;  // (2 * Qtr)
-  const uint64_t k3QtrValue_ = 0xC0000000;  // (3 * Qtr)
+  const uint64_t kTopValue_      = 0xFFFFFFFF;  // (1 << 32) - 1
+  const uint64_t kQtrValue_      = 0x40000000;  // (top / 4) + 1
+  const uint64_t kHalfValue_     = 0x80000000;  // (2 * Qtr)
+  const uint64_t k3QtrValue_     = 0xC0000000;  // (3 * Qtr)
 
   std::map<enum PROBABILITYMODEL, std::vector<int>> models_;
   std::vector<uint64_t> runtimemodel_;
@@ -133,7 +144,6 @@ class ArithmeticEngine
   std::vector<T> decodedsymbols_;
   std::unique_ptr<BitStream> bs_;
   enum MODE mode_;
-
 
   uint64_t low_          = 0;
   uint64_t high_         = kTopValue_;
@@ -143,8 +153,6 @@ class ArithmeticEngine
   uint64_t nextbit_      = 0;
   uint8_t bytebuffer_    = 0x00;
   uint8_t bytepos_       = 0x00;
-
-
 };
 
 }  // namespace Jcy

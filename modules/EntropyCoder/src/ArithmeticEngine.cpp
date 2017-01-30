@@ -13,6 +13,7 @@ namespace Jcy
 template class ArithmeticEngine<uint8_t>;
 template class ArithmeticEngine<uint16_t>;
 template class ArithmeticEngine<uint32_t>;
+template class ArithmeticEngine<int16_t>;
 
 template <typename T>
 ArithmeticEngine<T>::ArithmeticEngine(enum MODE mode)
@@ -134,11 +135,9 @@ void ArithmeticEngine<T>::Decode(const uint8_t* bits,
   size_t symcnt = 0;
   while (symcnt != totalsymbol)
   {
-	  std::cout << DecodeASymbol();
+    decodedsymbols_.push_back(DecodeASymbol());
     symcnt++;
   }
-
-  std::cout << std::endl;
 }
 
 template <typename T>
@@ -148,7 +147,7 @@ const char* ArithmeticEngine<T>::GetCodedBits() const
 }
 
 template <typename T>
-size_t ArithmeticEngine<T>::GetCodedBitsCount() const 
+size_t ArithmeticEngine<T>::GetCodedBitsCount() const
 {
   return bs_->GetWrittenSize();
 }
@@ -160,11 +159,23 @@ const T* ArithmeticEngine<T>::GetDecodedSymbols() const
 }
 
 template <typename T>
+size_t ArithmeticEngine<T>::GetDecodedSymbolCount() const
+{
+  return decodedsymbols_.size();
+}
+
+template <typename T>
 void ArithmeticEngine<T>::EncodeASymbol(T symbol)
 {
   range_ = high_ - low_ + 1;
-  high_  = low_ + (range_ * runtimemodel_[static_cast<size_t>(symbol)]) / runtimemodel_[0] - 1;
-  low_   = low_ + (range_ * runtimemodel_[static_cast<size_t>(symbol) + 1]) / runtimemodel_[0];
+  high_ =
+      low_ +
+      (range_ * runtimemodel_[static_cast<size_t>(symbol)]) / runtimemodel_[0] -
+      1;
+
+  low_ = low_ +
+         (range_ * runtimemodel_[static_cast<size_t>(symbol) + 1]) /
+             runtimemodel_[0];
 
   while (true)
   {
@@ -241,6 +252,7 @@ T ArithmeticEngine<T>::DecodeASymbol()
   range_ = high_ - low_ + 1;
   cummu  = ((value_ - low_ + 1) * runtimemodel_[0] - 1) / range_;
 
+  // std::cout << range_ << " " << cummu << std::endl;
   // Linear search for the interval this probability falls
   for (size_t i = 0; i < runtimemodel_.size() - 1; i++)
   {
@@ -295,8 +307,12 @@ T ArithmeticEngine<T>::DecodeASymbol()
   //   std::cout << "some case not considered" << std::endl;
   // }
 
-  high_ = low_ + (range_ * runtimemodel_[static_cast<size_t>(idx)]) / runtimemodel_[0] - 1;
-  low_  = low_ + (range_ * runtimemodel_[static_cast<size_t>(idx) + 1]) / runtimemodel_[0];
+  high_ =
+      low_ +
+      (range_ * runtimemodel_[static_cast<size_t>(idx)]) / runtimemodel_[0] - 1;
+  low_ =
+      low_ +
+      (range_ * runtimemodel_[static_cast<size_t>(idx) + 1]) / runtimemodel_[0];
 
   while (true)
   {

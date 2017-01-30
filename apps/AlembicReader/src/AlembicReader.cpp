@@ -5,6 +5,7 @@
 #include <Alembic/Abc/ISampleSelector.h>
 #include <Alembic/AbcCoreOgawa/All.h>
 #include <Alembic/AbcGeom/All.h>
+#include <Alembic/AbcGeom/XformSample.h>
 #include <Alembic/Util/All.h>
 
 #include <array>
@@ -117,7 +118,6 @@ class AlembicReader
     Alembic::Abc::ALEMBIC_VERSION_NS::IObject topobject(readerptr_->getTop());
     Alembic::AbcGeom::IPolyMeshSchema meshobject(
         topobject.getChild(geometryid).getChild(0).getProperties());
-
     // Get vertex, index buffer
     Alembic::Abc::ALEMBIC_VERSION_NS::ISampleSelector selector(
         static_cast<int64_t>(frameid));
@@ -149,9 +149,10 @@ class AlembicReader
     // Get bounding box
     Alembic::Abc::ALEMBIC_VERSION_NS::Box3d box = vsample_.getSelfBounds();
 
-    std::cout << meshobject.getTopologyVariance() << std::endl;
-    std::cout << box.center()[0] << " " << box.center()[1] << " "
-              << box.center()[2] << std::endl;
+    std::cout << "box center " << box.center()[0] << " " << box.center()[1]
+              << " " << box.center()[2] << std::endl;
+    std::cout << "box size " << box.size()[0] << " " << box.size()[1] << " "
+              << box.size()[2] << std::endl;
 
     if (dim != nullptr)
     {
@@ -200,6 +201,13 @@ class AlembicReader
       uvbuffer = nullptr;
     }
 
+    // Get transformation
+    // Alembic::AbcGeom::ALEMBIC_VERSION_NS::IXformSchema xform(
+    //     topobject.getChild(geometryid));
+    // Alembic::AbcGeom::ALEMBIC_VERSION_NS::XformSample xformsample;
+    // xform.get(xformsample, selector);
+    // std::cout << xformsample.getNumOps() << std::endl;
+    // std::cout << xformsample.getMatrix() << std::endl;
     return true;
   }
 
@@ -291,17 +299,28 @@ int main(int argc, char** argv)
   int vsize;
   int idxsize;
   int facecount;
-
-  if (!reader.GetGeometry(
-          0, 0, idxbuffer, vbuffer, uvbuffer, vsize, idxsize, facecount))
+  std::array<float, 3> center;
+  std::array<float, 3> size;
+  if (!reader.GetGeometry(1000,
+                          0,
+                          idxbuffer,
+                          vbuffer,
+                          uvbuffer,
+                          vsize,
+                          idxsize,
+                          facecount,
+                          &size,
+                          &center))
   {
     std::cout << "GetGeometry failed" << std::endl;
     return false;
   }
+
   std::cout << "Vercount: " << vsize << std::endl;
   std::cout << "Idxcount: " << idxsize << std::endl;
   std::cout << "facecount: " << facecount << std::endl;
-
+  std::cout << size[0] << " " << size[1] << " " << size[2] << std::endl;
+  std::cout << center[0] << " " << center[1] << " " << center[2] << std::endl;
   std::vector<float> uvs;
   std::vector<float> vertices;
   std::vector<int> indices;
