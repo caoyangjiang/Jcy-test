@@ -6,7 +6,7 @@ ${PROJECT_SOURCE_DIR}/src/SharedPtr.cpp
 )
 
 set(PROJECT_INCS
-${PROJECT_SOURCE_DIR}/include/Jcy/Boost/SharedPtr.h
+${PROJECT_SOURCE_DIR}/include/Jcy/Legacy/SharedPtr.h
 )
 
 # Separate include and src folder on Visual Studio

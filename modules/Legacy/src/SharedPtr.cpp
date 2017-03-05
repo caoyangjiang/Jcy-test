@@ -1,6 +1,6 @@
 // Copyright @ 2016 Caoyang Jiang
 
-#include "Jcy/Boost/SharedPtr.h"
+#include "Jcy/Legacy/SharedPtr.h"
 #include <boost/smart_ptr/shared_ptr.hpp>
 
 namespace Jcy
