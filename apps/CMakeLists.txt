@@ -37,6 +37,9 @@ add_subdirectory(BlockCompression) # Require Squish, OpenCV
 add_subdirectory(SimpleNvEncode) # Require CUDA, NVIDIA-ENCODE
 add_subdirectory(SimpleNvDecode) # Require CUDA, NVCUVID
 
+add_subdirectory(IEClient)
+add_subdirectory(IEServer)
+
 #Deprecated
 #add_subdirectory(BufferDecoder) # Require FFmpeg
 #add_subdirectory(SimpleRTPServer) # Require FFmpeg
