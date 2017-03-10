@@ -12,6 +12,44 @@
 
 #define N 10000000
 
+namespace WeakPtr
+{
+class Dummy
+{
+ public:
+  void Hello()
+  {
+    std::cout << "Hello" << std::endl;
+  }
+};
+
+int WeakPtrTest()
+{
+  std::shared_ptr<Dummy> ptr = std::make_shared<Dummy>();
+  std::weak_ptr<Dummy> a     = ptr;
+
+  if (a.expired())
+  {
+    std::cout << "Nothing done" << std::endl;
+  }
+  else
+  {
+    std::cout << "still alive" << std::endl;
+  }
+
+  std::shared_ptr<Dummy> ptr2 = a.lock();
+  if (ptr2 != NULL)
+  {
+    ptr2->Hello();
+  }
+  else
+  {
+    std::cout << "Nothing done" << std::endl;
+  }
+  return 0;
+}
+}  // namespace WeakPtr
+
 namespace Bind
 {
 class BindFunction
@@ -273,4 +311,6 @@ int main()
   LAMBDA::LambdaTest();
   std::cout << "Bind Test" << std::endl;
   Bind::BindTest();
+  std::cout << "WeakPtr Test" << std::endl;
+  WeakPtr::WeakPtrTest();
 }
