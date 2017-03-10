@@ -12,6 +12,84 @@
 
 #define N 10000000
 
+namespace Bind
+{
+class BindFunction
+{
+ public:
+  struct Mul
+  {
+    int32_t a_ = 0;
+    int32_t b_ = 0;
+    int32_t Mul(bool& ec)
+    {
+      ec = true;
+      return a_ * b_;
+    }
+  };
+
+ public:
+  void Run()
+  {
+    std::function<int32_t(bool&)> f0 =
+        std::bind(&BindFunction::Get, this, std::placeholders::_1);
+    RunGet(f0);
+
+    auto f1 = std::bind(&BindFunction::Add, this, 3, 3, true);
+    RunAdd(f1);
+    auto f2 = std::bind(&BindFunction::Sub, this, 12, 3, std::placeholders::_1);
+    RunSub(f2);
+  }
+
+  void RunGet(std::function<int32_t(bool&)> func)
+  {
+    bool ec = false;
+    std::cout << "Ret: " << func(ec);
+    std::cout << " EC: " << ec << std::endl;
+  }
+
+  void RunAdd(std::function<int32_t(void)> func)
+  {
+    std::cout << "Ret: " << func() << std::endl;
+  }
+
+  void RunSub(std::function<int32_t(bool&)> func)
+  {
+    bool ec = false;
+    std::cout << "Ret: " << func(ec) << std::endl;
+  }
+
+ private:
+  int32_t Get(bool& ec)
+  {
+    ec = true;
+    return 123;
+  }
+
+  int32_t Add(int32_t a, int32_t b, bool ec)
+  {
+    std::cout << "Add ec: " << ec << std::endl;
+    return a + b;
+  }
+
+  int32_t Sub(int32_t a, int32_t b, bool& ec)
+  {
+    if (a > b)
+      ec = false;
+    else
+      ec = true;
+    return a - b;
+  }
+};
+
+void BindTest()
+{
+  BindFunction bf;
+  bf.Run();
+}
+
+}  // namespace Bind
+
 namespace HashTest
 {
 void HashLibraryTest()
@@ -193,4 +271,6 @@ int main()
   VALARRAY::ValArrayTest();
   std::cout << "Lambad Test" << std::endl;
   LAMBDA::LambdaTest();
+  std::cout << "Bind Test" << std::endl;
+  Bind::BindTest();
 }
