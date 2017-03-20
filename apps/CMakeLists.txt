@@ -32,6 +32,7 @@ add_subdirectory(GraphTest) # Require Boost
 #add_subdirectory(SimpleBoostClient) # Require Boost
 #add_subdirectory(SimpleBoostServer) # Require Boost
 #add_subdirectory(Xml2) # Require LIBXML2
+add_subdirectory(SHA256) # Require libcrypto
 
 add_subdirectory(BlockCompression) # Require Squish, OpenCV
 #add_subdirectory(SimpleNvEncode) # Require CUDA, NVIDIA-ENCODE
