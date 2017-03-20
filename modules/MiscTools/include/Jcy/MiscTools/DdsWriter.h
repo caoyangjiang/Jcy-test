@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace Jcy
+namespace jcy
 {
 class DdsWriter
 {
@@ -110,5 +110,5 @@ class DdsWriter
     }
   } DDS;
 };
-}  // namespace Jcy
+}  // namespace jcy
 #endif  // MODULES_MISCTOOLS_INCLUDE_JCY_MISCTOOLS_DDSWRITER_H_

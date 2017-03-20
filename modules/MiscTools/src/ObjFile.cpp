@@ -1,11 +1,8 @@
 // Copyright @ 2016 Caoyang Jiang
 
 #include "Jcy/MiscTools/ObjFile.h"
-#include <fstream>
-#include <string>
-#include <vector>
 
-namespace Jcy
+namespace jcy
 {
 ObjFile::ObjFile()
 {
@@ -15,4 +12,4 @@ ObjFile::~ObjFile()
 {
 }
 
-}  // namespace Jcy
+}  // namespace jcy

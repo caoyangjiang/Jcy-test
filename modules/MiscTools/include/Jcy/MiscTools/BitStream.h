@@ -3,12 +3,12 @@
 #ifndef MODULES_MISCTOOLS_INCLUDE_JCY_MISCTOOLS_BITSTREAM_H_
 #define MODULES_MISCTOOLS_INCLUDE_JCY_MISCTOOLS_BITSTREAM_H_
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <string>
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 
-namespace Jcy
+namespace jcy
 {
 class BitStream
 {
@@ -27,8 +27,8 @@ class BitStream
   };
 
  public:
-  HVR_WINDOWS_DLL_API explicit BitStream(enum MODE mode, enum ENDIAN endian);
-  HVR_WINDOWS_DLL_API ~BitStream();
+  JCY_MISCTOOLS_DLL explicit BitStream(enum MODE mode, enum ENDIAN endian);
+  JCY_MISCTOOLS_DLL ~BitStream();
 
   /**
    * @brief      Reset internal bit buffer. If mode is MODE::RD, the read
@@ -37,17 +37,17 @@ class BitStream
    *             beginning of the buffer. Bit counter and bit buffer are
    *             cleared.
    */
-  HVR_WINDOWS_DLL_API void Reset();
+  JCY_MISCTOOLS_DLL void Reset();
 
   /**
    * @brief      Writes zero.
    */
-  HVR_WINDOWS_DLL_API void WriteZero();
+  JCY_MISCTOOLS_DLL void WriteZero();
 
   /**
    * @brief      Writes one.
    */
-  HVR_WINDOWS_DLL_API void WriteOne();
+  JCY_MISCTOOLS_DLL void WriteOne();
 
   /**
    * @brief      Write bit(s)
@@ -58,21 +58,21 @@ class BitStream
    *
    * @tparam     T         Bit container type.
    */
-  HVR_WINDOWS_DLL_API void Write(const uint8_t* bits, size_t bitcount);
+  JCY_MISCTOOLS_DLL void Write(const uint8_t* bits, size_t bitcount);
 
   /**
    * @brief      Reads a bit.
    *
    * @return     Zero or one.
    */
-  HVR_WINDOWS_DLL_API uint8_t ReadBit();
+  JCY_MISCTOOLS_DLL uint8_t ReadBit();
 
   /**
    * @brief      Read bit without performing length check.
    *
    * @return     Zero or one.
    */
-  HVR_WINDOWS_DLL_API uint8_t UnsafeReadBit();
+  JCY_MISCTOOLS_DLL uint8_t UnsafeReadBit();
 
   /**
    * @brief      If the number of bit left is less than requested or all bits
@@ -82,7 +82,7 @@ class BitStream
    *
    * @return     Positive if successful, else nullptr.
    */
-  HVR_WINDOWS_DLL_API const uint8_t* Read(size_t bitcount);
+  JCY_MISCTOOLS_DLL const uint8_t* Read(size_t bitcount);
 
   /**
    * @brief      Similar to Read() except this read do not perform length check.
@@ -91,7 +91,7 @@ class BitStream
    *
    * @return     Positive if successful, else nullptr.
    */
-  HVR_WINDOWS_DLL_API const uint8_t* UnsafeRead(size_t bitcount);
+  JCY_MISCTOOLS_DLL const uint8_t* UnsafeRead(size_t bitcount);
 
   /**
    * @brief      To avoid extra copying and allow various external bit buffer
@@ -103,7 +103,7 @@ class BitStream
    * @param[in]  rawstream  The rawstream
    * @param[in]  sizes      The sizes
    */
-  HVR_WINDOWS_DLL_API void Load(const uint8_t* bits, size_t sizes);
+  JCY_MISCTOOLS_DLL void Load(const uint8_t* bits, size_t sizes);
 
   /**
    * @brief      Loading bitstream with unknow length. This is unsafe and prone
@@ -112,7 +112,7 @@ class BitStream
    *
    * @param[in]  bits  The bit stream
    */
-  HVR_WINDOWS_DLL_API void Load(const uint8_t* bits);
+  JCY_MISCTOOLS_DLL void Load(const uint8_t* bits);
 
   /**
    * @brief      Gets the bit buffer. If mode is MODE::RD, this simply returns
@@ -121,21 +121,21 @@ class BitStream
    *
    * @return     The bit buffer.
    */
-  HVR_WINDOWS_DLL_API const uint8_t* GetBitBuffer() const;
+  JCY_MISCTOOLS_DLL const uint8_t* GetBitBuffer() const;
 
   /**
    * @brief      Gets the rem size.
    *
    * @return     The rem size.
    */
-  HVR_WINDOWS_DLL_API size_t GetRemSize() const;
+  JCY_MISCTOOLS_DLL size_t GetRemSize() const;
 
   /**
    * @brief      Gets the written size.
    *
    * @return     The written size.
    */
-  HVR_WINDOWS_DLL_API size_t GetWrittenSize() const;
+  JCY_MISCTOOLS_DLL size_t GetWrittenSize() const;
 
  private:
   // For writing
@@ -153,5 +153,5 @@ class BitStream
   enum ENDIAN endian_;
   size_t bitcounter_ = 0;
 };
-}  // namespace Jcy
+}  // namespace jcy
 #endif  // MODULES_MISCTOOLS_INCLUDE_JCY_MISCTOOLS_BITSTREAM_H_

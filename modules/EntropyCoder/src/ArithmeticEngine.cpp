@@ -2,13 +2,14 @@
 
 #include "Jcy/EntropyCoder/ArithmeticEngine.h"
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <cstring>
 #include <iostream>
 #include <memory>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+#include <vector>
+JCY_WINDOWS_ENABLE_ALL_WARNING
 
-namespace Jcy
+namespace jcy
 {
 template class ArithmeticEngine<uint8_t>;
 template class ArithmeticEngine<uint16_t>;
@@ -352,4 +353,4 @@ T ArithmeticEngine<T>::DecodeASymbol()
   return static_cast<T>(idx);
 }
 
-}  // namespace Jcy
+}  // namespace jcy

@@ -2,13 +2,13 @@
 
 #include "Jcy/MiscTools/BitStream.h"
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <iostream>
 #include <string>
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_ENABLE_ALL_WARNING
 
-namespace Jcy
+namespace jcy
 {
 BitStream::BitStream(enum MODE mode, enum ENDIAN endian)
 {
@@ -33,13 +33,13 @@ BitStream::~BitStream()
 {
 }
 
-HVR_WINDOWS_DLL_API void BitStream::WriteZero()
+void BitStream::WriteZero()
 {
   const uint8_t kZERO = 0x00;
   Write(&kZERO, 1);
 }
 
-HVR_WINDOWS_DLL_API void BitStream::WriteOne()
+void BitStream::WriteOne()
 {
   const uint8_t kONE = 0x01;
   Write(&kONE, 1);
@@ -92,12 +92,12 @@ void BitStream::Write(const uint8_t* bits, size_t size)
   }
 }
 
-HVR_WINDOWS_DLL_API uint8_t BitStream::ReadBit()
+uint8_t BitStream::ReadBit()
 {
   return *Read(1);
 }
 
-HVR_WINDOWS_DLL_API uint8_t BitStream::UnsafeReadBit()
+uint8_t BitStream::UnsafeReadBit()
 {
   return *Read(1);
 }
@@ -275,4 +275,4 @@ size_t BitStream::GetWrittenSize() const
 
   return 0;
 }
-}  // namespace Jcy
+}  // namespace jcy

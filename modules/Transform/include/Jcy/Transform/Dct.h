@@ -3,11 +3,11 @@
 #ifndef MODULES_TRANSFORM_INCLUDE_JCY_TRANSFORM_DCT_H_
 #define MODULES_TRANSFORM_INCLUDE_JCY_TRANSFORM_DCT_H_
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 
-namespace Jcy
+namespace jcy
 {
 class Dct
 {
@@ -26,5 +26,5 @@ class Dct
                        std::vector<std::vector<double>>& dataout) = 0;
 };
 
-}  // namespace Jcy
+}  // namespace jcy
 #endif  // MODULES_TRANSFORM_INCLUDE_JCY_TRANSFORM_DCT_H_

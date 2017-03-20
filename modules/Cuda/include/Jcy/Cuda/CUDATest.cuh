@@ -8,7 +8,7 @@
 
 #include "Jcy/Cuda/CUDAGlobal.cuh"
 
-namespace hvr
+namespace jcy
 {
 class CUDATest
 {

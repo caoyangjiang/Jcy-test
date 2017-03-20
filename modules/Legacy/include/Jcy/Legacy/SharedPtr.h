@@ -1,12 +1,12 @@
 // Copyright 2016 Caoyang Jiang
 
-#ifndef MODULES_BOOST_INCLUDE_JCY_BOOST_SHAREDPTR_H_
-#define MODULES_BOOST_INCLUDE_JCY_BOOST_SHAREDPTR_H_
+#ifndef MODULES_LEGACY_INCLUDE_JCY_LEGACY_SHAREDPTR_H_
+#define MODULES_LEGACY_INCLUDE_JCY_LEGACY_SHAREDPTR_H_
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <memory>
 
-namespace Jcy
+namespace jcy
 {
 class Dummy
 {
@@ -27,5 +27,5 @@ class SharedPtrTest
 
   boost::shared_ptr<Dummy> MakeSharedPtr() const;
 };
-}  // namespace Jcy
-#endif  // MODULES_BOOST_INCLUDE_JCY_BOOST_SHAREDPTR_H_
+}  // namespace jcy
+#endif  // MODULES_LEGACY_INCLUDE_JCY_LEGACY_SHAREDPTR_H_

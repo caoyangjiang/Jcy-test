@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-project(hvr-sample)
+project(jcy-test)
 
 if(MSVC)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -19,9 +19,11 @@ if(MSVC)
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   endif()
-  #Disable warnings on Windows
+  # Enable multi-thread compilation
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  # Disable warnings on Windows
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4127") # condition is constant
-  #Enable additional warnings on Windows
+  # Enable additional warnings on Windows
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX /sdl")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44062")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44191")
@@ -41,7 +43,6 @@ if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44342")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44350")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44355")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44365")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44370")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44371")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44388")
@@ -85,55 +86,54 @@ if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /w44988")
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Werror -fsigned-char")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -freg-struct-return -Wextra -ftree-vectorize -ftree-vectorizer-verbose=7")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -freg-struct-return -Wextra")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpointer-arith -Wcast-qual -Wshadow")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic -std=c++14 -mavx2 -mavx -pthread")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic -std=c++1y")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall -Werror -fsigned-char")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpointer-arith -Wcast-qual -Wshadow")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic -std=c++1y")
 endif()
 
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 option(DEBUG "Enable debugging information" OFF)
 
-if(DEBUG)
-  if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") OR CMAKE_COMPILER_IS_GNUCC
+    OR CMAKE_COMPILER_IS_GNUCXX)
+  if(DEBUG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Winline")
-  endif()
-else()
-  if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+  else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG")
   endif()
 endif()
 
 message(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-option(DOCUMENTATION "Create HTML based API documentation with Doxygen" OFF)
+if(NOT TARGET uninstall)
+  configure_file(
+      ${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in
+      ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+      IMMEDIATE @ONLY)
 
-if(DOCUMENTATION)
-  find_package(Doxygen)
-  if(NOT DOXYGEN_FOUND)
-    message(FATAL_ERROR "Doxygen is needed to build the documentation.")
-  endif()
-
-  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc)
-  add_custom_target(doc ALL
-                    ${DOXYGEN_EXECUTABLE}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/doc/Doxyfile
-                    WORKING_DIRECTORY
-                    ${CMAKE_BINARY_DIR}/doc)
+  add_custom_target(uninstall
+      COMMAND ${CMAKE_COMMAND} -P
+      ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
 
-if(MSVC) # Disable warnings for external libraries on Visual Studio.
-  add_definitions(/D
-    "HVR_WINDOWS_DISABLE_ALL_WARNING=__pragma(warning(push,0))")
-  add_definitions(/D
-    "HVR_WINDOWS_ENABLE_ALL_WARNING=__pragma(warning(pop))")
-else()
-  add_definitions(-DHVR_WINDOWS_DISABLE_ALL_WARNING=)
-  add_definitions(-DHVR_WINDOWS_ENABLE_ALL_WARNING=)
-  add_definitions(-DHVR_WINDOWS_DLL_API=)
-endif()
+export(TARGETS
+      FILE ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Targets.cmake)
 
-message(HVR_WINDOWS_ENABLE_ALL_WARNING)
+file(WRITE
+    ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
+    "include(\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Targets.cmake)\n")
+
 add_subdirectory(modules)
-add_subdirectory(apps)
+#add_subdirectory(apps)
+add_subdirectory(doc)
+
+install(FILES
+        ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
+        DESTINATION lib/cmake/${PROJECT_NAME})
+
+install(EXPORT ${PROJECT_NAME}Targets DESTINATION lib/cmake/${PROJECT_NAME})

@@ -1,5 +1,10 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.7)
 project(jcy_cuda)
+
+if(MSVC)
+  set(DLLIMPORT "__declspec(dllimport)")
+  set(DLLEXPORT "__declspec(dllexport)")
+endif()
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/CUDATest.cu
@@ -15,29 +20,53 @@ ${PROJECT_SOURCE_DIR}/include/Jcy/Cuda/CudaColorSpaceCVT.h
 ${PROJECT_SOURCE_DIR}/include/Jcy/Cuda/CudaConfig.h
 )
 
-# Separate include and src folder on Visual Studio
 source_group("include" FILES ${PROJECT_INCS})
 source_group("src"     FILES ${PROJECT_SRCS})
 
-# Find dependent libraries
 find_package( CUDA REQUIRED )
-
-# Add extra flags to NVCC
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52;")
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50;")
-if(MSVC)
-  string(REGEX REPLACE "/W[0-4]" "/W3" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") OR CMAKE_COMPILER_IS_GNUCC
+    OR CMAKE_COMPILER_IS_GNUCXX)
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-  list(APPEND CUDA_NVCC_FLAGS "-std=c++11;")
+  set(CUDA_NVCC_FLAGS "-std=c++11")
 endif()
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_61,code=sm_61")
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52")
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50")
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35")
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30")
 
-# Include paths
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
+# for visual studio
+string(REPLACE "/w44668" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+string(REPLACE "/sdl" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-# Link module to external libraries
 cuda_add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
 
-# Group this project into "hvr-decode/modules" in Visual Studio
-set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Jcy-test/modules")
+target_compile_definitions(${PROJECT_NAME} INTERFACE
+                          JCY_CUDA_DLL=${DLLIMPORT})
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+                          JCY_CUDA_DLL=${DLLEXPORT})
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+                          $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                          $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY
+            FOLDER ${CMAKE_PROJECT_NAME}/modules)
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${CMAKE_PROJECT_NAME}Targets
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin)
+
+# install(FILES ${PROJECT_SOURCE_DIR}/include/Hvr/CUDASample/CUDASample.cuh
+#               ${PROJECT_SOURCE_DIR}/include/Hvr/CUDASample/CUDAConfig.h
+        # DESTINATION include/Hvr/CUDASample)
+
+export(TARGETS ${PROJECT_NAME}
+      APPEND FILE ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Targets.cmake)
+
+file(APPEND
+    ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
+    "set(JCY_TEST_LIBRARIES \${JCY_TEST_LIBRARIES} ${PROJECT_NAME})\n")

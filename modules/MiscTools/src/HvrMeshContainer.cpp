@@ -2,9 +2,11 @@
 
 #include "Jcy/MiscTools/HvrMeshContainer.h"
 
-namespace Jcy
-{
+#include <string>
+#include <vector>
 
+namespace jcy
+{
 HvrMeshFrameCreator::HvrMeshFrameCreator()
 {
 }
@@ -26,7 +28,8 @@ void HvrMeshFrameCreator::Write(const std::string& filename)
   frame.datatype = 0;
   frame.chlayout = 0;
   frame.numch    = static_cast<uint8_t>(vertices_[0].size());
-  frame.datasize = static_cast<uint32_t>(frame.numch * sizeof(float) * vertices_.size());
+  frame.datasize =
+      static_cast<uint32_t>(frame.numch * sizeof(float) * vertices_.size());
 
   ofs.write(reinterpret_cast<const char*>(&frame), sizeof(HvrMeshFrame));
   for (size_t v = 0; v < vertices_.size(); v++)
@@ -57,7 +60,10 @@ void HvrMeshSequenceCreator::Merge(const std::string& outputfilename,
     {
       std::ifstream in;
       fname = std::to_string(first);
-      fname.insert(fname.begin(), static_cast<uint32_t>(d) - static_cast<uint32_t>(fname.size()), '0');
+      fname.insert(
+          fname.begin(),
+          static_cast<uint32_t>(d) - static_cast<uint32_t>(fname.size()),
+          '0');
       fname = inputfileprefix + fname + ".hmf";
       in.open(fname);
       if (in.fail())
@@ -92,7 +98,10 @@ void HvrMeshSequenceCreator::Merge(const std::string& outputfilename,
     uint32_t vcnt;
 
     fname = std::to_string(ifrm);
-    fname.insert(fname.begin(), static_cast<uint32_t>(numdigit) - static_cast<uint32_t>(fname.size()), '0');
+    fname.insert(
+        fname.begin(),
+        static_cast<uint32_t>(numdigit) - static_cast<uint32_t>(fname.size()),
+        '0');
     fname = inputfileprefix + fname + ".hmf";
 
     ifs.open(fname, std::ios::in | std::ios::binary);
@@ -138,7 +147,10 @@ void HvrMeshSequenceCreator::Merge(const std::string& outputfilename,
     std::unique_ptr<uint8_t[]> vbuf;
 
     fname = std::to_string(ifrm);
-    fname.insert(fname.begin(), static_cast<uint32_t>(numdigit) - static_cast<uint32_t>(fname.size()), '0');
+    fname.insert(
+        fname.begin(),
+        static_cast<uint32_t>(numdigit) - static_cast<uint32_t>(fname.size()),
+        '0');
     fname = inputfileprefix + fname + ".hmf";
 
     ifs.open(fname, std::ios::in | std::ios::binary);
@@ -189,8 +201,8 @@ std::vector<std::vector<T>> HvrMeshSequenceLoader::GetVertexByFrameID(
     int frameid)
 {
   std::vector<std::vector<T>> vbuf;
-  int numofvertex =
-      sizes_[static_cast<size_t>(frameid)] / (hms_.numch * (hms_.datatype == 0 ? 4 : 2));
+  int numofvertex = sizes_[static_cast<size_t>(frameid)] /
+                    (hms_.numch * (hms_.datatype == 0 ? 4 : 2));
 
   ifs_.seekg(begs_[static_cast<size_t>(frameid)], ifs_.beg);
 
@@ -198,7 +210,8 @@ std::vector<std::vector<T>> HvrMeshSequenceLoader::GetVertexByFrameID(
   {
     std::vector<T> vt;
     vt.resize(hms_.numch);
-    ifs_.read(reinterpret_cast<char*>(vt.data()), static_cast<std::streamsize>(sizeof(T) * hms_.numch));
+    ifs_.read(reinterpret_cast<char*>(vt.data()),
+              static_cast<std::streamsize>(sizeof(T) * hms_.numch));
     vbuf.push_back(vt);
   }
   return vbuf;
@@ -210,7 +223,8 @@ const HvrMeshSequence& HvrMeshSequenceLoader::GetHMS() const
 }
 
 template std::vector<std::vector<float>>
-HVR_WINDOWS_DLL_API HvrMeshSequenceLoader::GetVertexByFrameID<float>(int frameid);
+HvrMeshSequenceLoader::GetVertexByFrameID<float>(int frameid);
 template std::vector<std::vector<int16_t>>
-HVR_WINDOWS_DLL_API HvrMeshSequenceLoader::GetVertexByFrameID<int16_t>(int frameid);
-}  // namespace hvr
+HvrMeshSequenceLoader::GetVertexByFrameID<int16_t>(int frameid);
+
+}  // namespace jcy

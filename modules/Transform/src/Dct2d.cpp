@@ -2,13 +2,13 @@
 
 #include "Jcy/Transform/Dct2d.h"
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <cmath>
 #include <iostream>
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 
-namespace Jcy
+namespace jcy
 {
 Dct2d::Dct2d()
 {
@@ -170,4 +170,4 @@ bool Dct2d::Inverse(const std::vector<std::vector<double>>& indata,
   return true;
 }
 
-}  // namespace Jcy
+}  // namespace jcy

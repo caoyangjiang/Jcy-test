@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace Jcy
+namespace jcy
 {
 struct HvrMeshFrame
 {
@@ -38,15 +38,15 @@ struct HvrMeshSequence
 class HvrMeshFrameCreator
 {
  public:
-  HVR_WINDOWS_DLL_API HvrMeshFrameCreator();
-  HVR_WINDOWS_DLL_API ~HvrMeshFrameCreator();
+  JCY_MISCTOOLS_DLL HvrMeshFrameCreator();
+  JCY_MISCTOOLS_DLL ~HvrMeshFrameCreator();
 
   /**
    * @brief      Adds a vertex.
    *
    * @param[in]  vertex  The vertex
    */
-  HVR_WINDOWS_DLL_API void AddVertex(const std::vector<float>& vertex);
+  JCY_MISCTOOLS_DLL void AddVertex(const std::vector<float>& vertex);
 
   /**
    * @brief      Write vertex buffer to output. Use output file extension name
@@ -54,7 +54,7 @@ class HvrMeshFrameCreator
    *
    * @param[in]  filename  The filename
    */
-  HVR_WINDOWS_DLL_API void Write(const std::string& filename);
+  JCY_MISCTOOLS_DLL void Write(const std::string& filename);
 
  private:
   std::vector<std::vector<float>> vertices_;
@@ -63,8 +63,8 @@ class HvrMeshFrameCreator
 class HvrMeshSequenceCreator
 {
  public:
-  HVR_WINDOWS_DLL_API HvrMeshSequenceCreator();
-  HVR_WINDOWS_DLL_API ~HvrMeshSequenceCreator();
+  JCY_MISCTOOLS_DLL HvrMeshSequenceCreator();
+  JCY_MISCTOOLS_DLL ~HvrMeshSequenceCreator();
 
   /**
    * @brief      Merge all HvrMesh frames into HvrMesh sequence. Use output file
@@ -76,17 +76,17 @@ class HvrMeshSequenceCreator
    * @param[in]  first            The first frame id.
    * @param[in]  last             The last frame id.
    */
-  HVR_WINDOWS_DLL_API void Merge(const std::string& outputfilename,
-             const std::string& inputfileprefix,
-             int first,
-             int last);
+  JCY_MISCTOOLS_DLL void Merge(const std::string& outputfilename,
+                               const std::string& inputfileprefix,
+                               int first,
+                               int last);
 };
 
 class HvrMeshSequenceLoader
 {
  public:
-  HVR_WINDOWS_DLL_API HvrMeshSequenceLoader();
-  HVR_WINDOWS_DLL_API ~HvrMeshSequenceLoader();
+  JCY_MISCTOOLS_DLL HvrMeshSequenceLoader();
+  JCY_MISCTOOLS_DLL ~HvrMeshSequenceLoader();
 
   /**
    * @brief      Parse a HvrMeshSequence file.
@@ -95,18 +95,17 @@ class HvrMeshSequenceLoader
    *
    * @return     True if parsing successful, false otherwise;
    */
-  HVR_WINDOWS_DLL_API bool Parse(const std::string& filename);
-  
-  
+  JCY_MISCTOOLS_DLL bool Parse(const std::string& filename);
+
   template <typename T>
-  HVR_WINDOWS_DLL_API std::vector<std::vector<T>> GetVertexByFrameID(int frameid);
+  JCY_MISCTOOLS_DLL std::vector<std::vector<T>> GetVertexByFrameID(int frameid);
 
   /**
    * @brief      Gets the HvrMeshFrame.
    *
    * @return     The HvrMeshFrame.
    */
-  HVR_WINDOWS_DLL_API const HvrMeshSequence& GetHMS() const;
+  JCY_MISCTOOLS_DLL const HvrMeshSequence& GetHMS() const;
 
  private:
   HvrMeshSequence hms_;
@@ -115,5 +114,5 @@ class HvrMeshSequenceLoader
   std::ifstream ifs_;
 };
 
-}  // namespace Jcy
+}  // namespace jcy
 #endif  // MODULES_MISCTOOLS_INCLUDE_JCY_MISCTOOLS_HVRMESHCONTAINER_H_

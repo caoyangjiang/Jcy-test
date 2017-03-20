@@ -2,11 +2,11 @@
 
 #include "Jcy/Transform/Dct.h"
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 
-namespace Jcy
+namespace jcy
 {
 Dct::Dct()
 {
@@ -16,4 +16,4 @@ Dct::~Dct()
 {
 }
 
-}  // namespace Jcy
+}  // namespace jcy

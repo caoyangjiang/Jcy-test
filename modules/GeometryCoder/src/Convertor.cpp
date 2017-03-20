@@ -7,7 +7,7 @@
 #include <string>
 #include "opencv2/opencv.hpp"
 
-namespace Jcy
+namespace jcy
 {
 Convertor::Convertor()
 {
@@ -63,4 +63,4 @@ bool Convertor::Yml2Raw(const std::string ymlfile,
   outfile.close();
   return true;
 }
-}  // namespace Jcy
+}  // namespace jcy

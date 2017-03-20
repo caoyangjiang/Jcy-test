@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace Jcy
+namespace jcy
 {
 typedef struct Vertice
 {
@@ -19,15 +19,15 @@ typedef struct Vertice
 class ObjFile
 {
  public:
-  HVR_WINDOWS_DLL_API ObjFile();
-  HVR_WINDOWS_DLL_API ~ObjFile();
+  JCY_MISCTOOLS_DLL ObjFile();
+  JCY_MISCTOOLS_DLL ~ObjFile();
 
   template <class T>
-  HVR_WINDOWS_DLL_API void SaveObjFile(const std::string& filename,
-                   const std::string& mtlname,
-                   const std::vector<Vertice>& vb,
-                   const std::vector<Vertice>& uvb,
-                   const std::vector<T>& faces)
+  JCY_MISCTOOLS_DLL void SaveObjFile(const std::string& filename,
+                                     const std::string& mtlname,
+                                     const std::vector<Vertice>& vb,
+                                     const std::vector<Vertice>& uvb,
+                                     const std::vector<T>& faces)
   {
     std::ofstream vstream(
         filename,
@@ -59,11 +59,11 @@ class ObjFile
   }
 
   template <class T>
-  HVR_WINDOWS_DLL_API void SaveObjFileTrunc(const std::string& filename,
-                        const std::string& mtlname,
-                        const std::vector<Vertice>& vb,
-                        const std::vector<Vertice>& uvb,
-                        const std::vector<T>& faces)
+  JCY_MISCTOOLS_DLL void SaveObjFileTrunc(const std::string& filename,
+                                          const std::string& mtlname,
+                                          const std::vector<Vertice>& vb,
+                                          const std::vector<Vertice>& uvb,
+                                          const std::vector<T>& faces)
   {
     std::ofstream vstream(
         filename,
@@ -97,5 +97,5 @@ class ObjFile
     vstream.close();
   }
 };
-}  // namespace Jcy
+}  // namespace jcy
 #endif  // MODULES_OBJFILE_INCLUDE_JCY_OBJFILE_OBJFILE_H_

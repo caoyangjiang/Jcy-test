@@ -2,14 +2,14 @@
 
 #include "Jcy/Transform/SADct.h"
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 
-namespace Jcy
+namespace jcy
 {
 template <class T>
 std::ostream& operator<<(std::ostream& os,
@@ -452,4 +452,4 @@ bool SADct::Inverse(const std::vector<std::vector<double>>& indata,
   return true;
 }
 
-}  // namespace Jcy
+}  // namespace jcy

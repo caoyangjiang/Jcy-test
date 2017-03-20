@@ -3,7 +3,7 @@
 #ifndef MODULES_CUDA_INCLUDE_JCY_CUDA_CUROTATOR_CUH_
 #define MODULES_CUDA_INCLUDE_JCY_CUDA_CUROTATOR_CUH_
 
-namespace Jcy
+namespace jcy
 {
 class CuRotator
 {
@@ -11,5 +11,5 @@ class CuRotator
   CuRotator();
   ~CuRotator();
 };
-}  // namespace Jcy
+}  // namespace jcy
 #endif  // MODULES_CUDA_INCLUDE_JCY_CUDA_CUROTATOR_CUH_

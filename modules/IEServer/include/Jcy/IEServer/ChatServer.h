@@ -1,5 +1,8 @@
 // Copyright @ 2017 Caoyang Jiang
 
+#ifndef MODULES_IESERVER_INCLUDE_JCY_IESERVER_CHATSERVER_H_
+#define MODULES_IESERVER_INCLUDE_JCY_IESERVER_CHATSERVER_H_
+
 #include <algorithm>
 #include <cstdlib>
 #include <deque>
@@ -95,3 +98,5 @@ typedef boost::shared_ptr<chat_server> chat_server_ptr;
 typedef std::list<chat_server_ptr> chat_server_list;
 
 }  // namespace jcy
+
+#endif  // MODULES_IESERVER_INCLUDE_JCY_IESERVER_CHATSERVER_H_

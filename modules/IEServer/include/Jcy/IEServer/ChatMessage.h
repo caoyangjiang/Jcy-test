@@ -1,7 +1,7 @@
 // Copyright @ 2017 Caoyang Jiang
 
-#ifndef CHAT_MESSAGE_HPP
-#define CHAT_MESSAGE_HPP
+#ifndef MODULES_IESERVER_INCLUDE_JCY_IESERVER_CHATMESSAGE_H_
+#define MODULES_IESERVER_INCLUDE_JCY_IESERVER_CHATMESSAGE_H_
 
 #include <cstdio>
 #include <cstdlib>
@@ -88,4 +88,4 @@ class chat_message
 };
 
 }  // namespace jcy
-#endif  // CHAT_MESSAGE_HPP
+#endif  // MODULES_IESERVER_INCLUDE_JCY_IESERVER_CHATMESSAGE_H_

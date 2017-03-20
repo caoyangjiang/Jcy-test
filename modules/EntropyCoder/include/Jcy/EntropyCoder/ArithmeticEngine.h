@@ -3,15 +3,15 @@
 #ifndef MODULES_ENTROPYCODER_INCLUDE_JCY_ENTROPYCODER_ARITHMETICENGINE_H_
 #define MODULES_ENTROPYCODER_INCLUDE_JCY_ENTROPYCODER_ARITHMETICENGINE_H_
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <map>
 #include <memory>
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_ENABLE_ALL_WARNING
 
 #include "Jcy/MiscTools/BitStream.h"
 
-namespace Jcy
+namespace jcy
 {
 template <typename T>
 class ArithmeticEngine
@@ -37,15 +37,15 @@ class ArithmeticEngine
   };
 
  public:
-  HVR_WINDOWS_DLL_API explicit ArithmeticEngine(enum MODE mode);
-  HVR_WINDOWS_DLL_API ~ArithmeticEngine();
+  JCY_ENTROPYCODER_DLL explicit ArithmeticEngine(enum MODE mode);
+  JCY_ENTROPYCODER_DLL ~ArithmeticEngine();
 
   /**
    * @brief      Loads a probability model externally.
    *
    * @param[in]  frequency  The frequency
    */
-  HVR_WINDOWS_DLL_API void LoadProbabilityModel(
+  JCY_ENTROPYCODER_DLL void LoadProbabilityModel(
       const std::vector<uint64_t>& frequency);
 
   /**
@@ -53,8 +53,8 @@ class ArithmeticEngine
    *
    * @param[in]  emodel  The emodel
    */
-  HVR_WINDOWS_DLL_API void LoadProbabilityModel(enum PROBABILITYMODEL emodel,
-                                                uint64_t samplesize);
+  JCY_ENTROPYCODER_DLL void LoadProbabilityModel(enum PROBABILITYMODEL emodel,
+                                                 uint64_t samplesize);
 
   /**
    * @brief      Encode input symbols.
@@ -62,7 +62,7 @@ class ArithmeticEngine
    * @param[in]  symbols      The symbols
    * @param[in]  totalsymbol  The totalsymbol
    */
-  HVR_WINDOWS_DLL_API void Encode(const T* symbols, size_t totalsymbol);
+  JCY_ENTROPYCODER_DLL void Encode(const T* symbols, size_t totalsymbol);
 
   /**
    * @brief      Support 400M number of symbols in the bitstream.
@@ -73,58 +73,58 @@ class ArithmeticEngine
    *
    * @return     True if decoding successful, false otherwise.
    */
-  HVR_WINDOWS_DLL_API void Decode(const uint8_t* bits,
-                                  size_t totalbits,
-                                  size_t totalsymbol);
+  JCY_ENTROPYCODER_DLL void Decode(const uint8_t* bits,
+                                   size_t totalbits,
+                                   size_t totalsymbol);
 
   /**
    * @brief      Clean internal coded bit buffer.
    */
-  HVR_WINDOWS_DLL_API void ResetBitBuffer();
+  JCY_ENTROPYCODER_DLL void ResetBitBuffer();
 
   /**
    * @brief      Clean internal decoded symbol buffer.
    */
-  HVR_WINDOWS_DLL_API void ResetSymBuffer();
+  JCY_ENTROPYCODER_DLL void ResetSymBuffer();
 
   /**
    * @brief      Restart arithmetic engine to initial state (not probability
    *             model if adaptive is selected.)
    */
-  HVR_WINDOWS_DLL_API void ResetEngineState();
+  JCY_ENTROPYCODER_DLL void ResetEngineState();
 
   /**
    * @brief      Reset probability model to initial state.
    */
-  HVR_WINDOWS_DLL_API void ResetProbabilityModel();
+  JCY_ENTROPYCODER_DLL void ResetProbabilityModel();
 
   /**
    * @brief      Gets the coded bits.
    *
    * @return     The coded bits.
    */
-  HVR_WINDOWS_DLL_API const char* GetCodedBits() const;
+  JCY_ENTROPYCODER_DLL const char* GetCodedBits() const;
 
   /**
    * @brief      Gets the coded bits count.
    *
    * @return     The coded bits count.
    */
-  HVR_WINDOWS_DLL_API size_t GetCodedBitsCount() const;
+  JCY_ENTROPYCODER_DLL size_t GetCodedBitsCount() const;
 
   /**
    * @brief      Gets the decoded symbols.
    *
    * @return     The decoded symbols.
    */
-  HVR_WINDOWS_DLL_API const T* GetDecodedSymbols() const;
+  JCY_ENTROPYCODER_DLL const T* GetDecodedSymbols() const;
 
   /**
    * @brief      Gets the number of  symbols.
    *
    * @return     Number of decoded symbols.
    */
-  HVR_WINDOWS_DLL_API size_t GetDecodedSymbolCount() const;
+  JCY_ENTROPYCODER_DLL size_t GetDecodedSymbolCount() const;
 
  private:
   void EncodeASymbol(T symbol);
@@ -155,5 +155,5 @@ class ArithmeticEngine
   uint8_t bytepos_       = 0x00;
 };
 
-}  // namespace Jcy
+}  // namespace jcy
 #endif  // MODULES_ENTROPYCODER_INCLUDE_JCY_ENTROPYCODER_ARITHMETICENGINE_H_

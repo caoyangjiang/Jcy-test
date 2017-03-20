@@ -11,7 +11,7 @@ __global__ static void CUDAKernelAddOneToArray(int *data)
   data[y * mx + x] = data[y * mx + x] + 1.0f;
 }
 
-namespace hvr
+namespace jcy
 {
 CUDATest::CUDATest()
 {
@@ -53,4 +53,4 @@ void CUDATest::AddOneToArray(std::vector<int> &in)
   cudaFree(data_);
 }
 
-}  // namespace hvr
+}  // namespace jcy

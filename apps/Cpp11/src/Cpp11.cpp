@@ -55,18 +55,6 @@ namespace Bind
 class BindFunction
 {
  public:
-  struct Mul
-  {
-    int32_t a_ = 0;
-    int32_t b_ = 0;
-    int32_t Mul(bool& ec)
-    {
-      ec = true;
-      return a_ * b_;
-    }
-  };
-
- public:
   void Run()
   {
     std::function<int32_t(bool&)> f0 =

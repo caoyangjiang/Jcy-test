@@ -6,7 +6,7 @@ __global__ static void RotationKernel(int *in, int *out, int degree)
 {
 }
 
-namespace Jcy
+namespace jcy
 {
 CuRotator::CuRotator()
 {
@@ -15,4 +15,4 @@ CuRotator::CuRotator()
 CuRotator::~CuRotator()
 {
 }
-}
+} // namespace jcy

@@ -6,7 +6,7 @@
 #include <string>
 #include "opencv2/opencv.hpp"
 
-namespace Jcy
+namespace jcy
 {
 class Convertor
 {
@@ -18,5 +18,5 @@ class Convertor
                const std::string rawfile,
                int mode) const;
 };
-}  // namespace Jcy
+}  // namespace jcy
 #endif  // MODULES_GEOMETRYCODER_INCLUDE_JCY_GEOMETRYCODER_CONVERTOR_H_
