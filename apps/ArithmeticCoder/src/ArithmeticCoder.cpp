@@ -3,15 +3,16 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <vector>
 
 #include "Jcy/EntropyCoder/ArithmeticEngine.h"
 
 int main()
 {
-  Jcy::ArithmeticEngine<uint16_t> ae(
-      Jcy::ArithmeticEngine<uint16_t>::MODE::ENCODE);
-  Jcy::ArithmeticEngine<uint16_t> ad(
-      Jcy::ArithmeticEngine<uint16_t>::MODE::DECODE);
+  jcy::ArithmeticEngine<uint16_t> ae(
+      jcy::ArithmeticEngine<uint16_t>::MODE::ENCODE);
+  jcy::ArithmeticEngine<uint16_t> ad(
+      jcy::ArithmeticEngine<uint16_t>::MODE::DECODE);
 
   std::vector<uint16_t> symbols;
   std::vector<uint64_t> freq;

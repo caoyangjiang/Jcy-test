@@ -4,8 +4,8 @@
 
 int main(int, char**)
 {
-  Jcy::HvrMeshFrameCreator creator;
-  Jcy::HvrMeshSequenceCreator screator;
+  jcy::HvrMeshFrameCreator creator;
+  jcy::HvrMeshSequenceCreator screator;
 
   std::vector<float> vertex;
 
@@ -32,7 +32,7 @@ int main(int, char**)
 
   screator.Merge("test.hms", "buffalo_tri_uvonly_uvonly", 1, 1);
 
-  Jcy::HvrMeshSequenceLoader loader;
+  jcy::HvrMeshSequenceLoader loader;
 
   loader.Parse("test.hms");
 
@@ -45,7 +45,7 @@ int main(int, char**)
 
     for (size_t v = 0; v < vbuf.size(); v++)
     {
-      for (size_t e = 0; e <  vbuf[v].size(); e++)
+      for (size_t e = 0; e < vbuf[v].size(); e++)
       {
         std::cout << vbuf[v][e] << " ";
       }

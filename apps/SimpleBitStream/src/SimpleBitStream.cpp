@@ -8,7 +8,7 @@
 
 #include "Jcy/MiscTools/BitStream.h"
 
-using Jcy::BitStream;
+using jcy::BitStream;
 
 int main()
 {

@@ -1,22 +1,23 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.7)
 project(CurlTest)
-
-if(MSVC)
-  add_definitions("-DHVR_WINDOWS_DLL_API=__declspec\(dllimport\)")
-endif()
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/CurlTest.cpp
 )
 
-# Find dependent libraries
+source_group("src" FILES ${PROJECT_SRCS})
+
 find_package( CURL REQUIRED )
 
-# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
-# Include paths
-include_directories(${CURL_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+                          ${CURL_INCLUDE_DIRS})
 
-# Link application to libraries
 target_link_libraries(${PROJECT_NAME} ${CURL_LIBRARIES})
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER ${CMAKE_PROJECT_NAME}/apps)
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${CMAKE_PROJECT_NAME}Targets
+        DESTINATION bin)

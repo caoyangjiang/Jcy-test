@@ -1,5 +1,5 @@
 // Copyright @ 2016 Caoyang Jiang
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
@@ -8,7 +8,7 @@ HVR_WINDOWS_DISABLE_ALL_WARNING
 #include <cmath>
 #include <iomanip>
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_ENABLE_ALL_WARNING
 #include "Jcy/Transform/SADct.h"
 
 using boost::numeric::ublas::matrix;
@@ -193,7 +193,7 @@ int main()
 
   std::cout << in << std::endl;
 
-  Jcy::SADct dct;
+  jcy::SADct dct;
   dct.SetContour(contour);
   dct.Forward(mat, out);
   std::cout << out << std::endl;

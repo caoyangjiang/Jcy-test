@@ -66,8 +66,8 @@ int main()
   std::vector<std::vector<double>> out;
   std::vector<std::vector<bool>> contour;
   std::vector<std::vector<double>> in;
-  Jcy::SADct dct;
-  Jcy::Dct2d dct2d;
+  jcy::SADct dct;
+  jcy::Dct2d dct2d;
 
   for (size_t i = 0; i < 4; i++)
   {
