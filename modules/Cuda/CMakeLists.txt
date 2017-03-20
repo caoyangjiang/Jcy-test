@@ -41,6 +41,10 @@ string(REPLACE "/sdl" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 cuda_add_library(${PROJECT_NAME} SHARED ${PROJECT_SRCS} ${PROJECT_INCS})
 
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+                          JCY_WINDOWS_DISABLE_ALL_WARNING=${DISABLE}
+                          JCY_WINDOWS_ENABLE_ALL_WARNING=${ENABLE})
+
 target_compile_definitions(${PROJECT_NAME} INTERFACE
                           JCY_CUDA_DLL=${DLLIMPORT})
 

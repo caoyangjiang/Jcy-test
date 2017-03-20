@@ -132,6 +132,14 @@ add_subdirectory(modules)
 #add_subdirectory(apps)
 add_subdirectory(doc)
 
+
+option(UNIT_TEST "Run unit tests" ON)
+
+if(UNIT_TEST)
+  add_subdirectory(unit-test)
+endif()
+
+
 install(FILES
         ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
         DESTINATION lib/cmake/${PROJECT_NAME})
