@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project(SimpleBitStream)
+project(BitStream)
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/SimpleBitStream.cpp

@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "Jcy/MiscTools/ObjFile.h"
+#include "jcy/MiscTools/ObjFile.h"
 
 #define MESH_PRIMITIVE_POINT 1
 #define MESH_PRIMTIVE_LINE 2
@@ -290,7 +290,7 @@ void Decimate(std::unique_ptr<float[]>& array, size_t size, size_t keepdigits)
   }
 }
 
-void ArrayToVector(std::vector<Jcy::Vertice>& buffer,
+void ArrayToVector(std::vector<jcy::Vertice>& buffer,
                    std::unique_ptr<float[]>& array,
                    size_t size,
                    size_t comps)
@@ -299,20 +299,20 @@ void ArrayToVector(std::vector<Jcy::Vertice>& buffer,
   {
     if (comps == 1)
     {
-      Jcy::Vertice v;
+      jcy::Vertice v;
       v.x = array[ss];
       buffer.push_back(v);
     }
     else if (comps == 2)
     {
-      Jcy::Vertice v;
+      jcy::Vertice v;
       v.x = array[ss];
       v.y = array[ss + 1];
       buffer.push_back(v);
     }
     else if (comps == 3)
     {
-      Jcy::Vertice v;
+      jcy::Vertice v;
       v.x = array[ss];
       v.y = array[ss + 1];
       v.z = array[ss + 2];
@@ -348,8 +348,8 @@ void ArrayToVector(std::vector<T>& buffer,
 
 template <class T>
 void IndexBufferToTriStrip(const std::vector<T>& idxbuffer,
-                           const std::vector<Jcy::Vertice>& vb,
-                           const std::vector<Jcy::Vertice>& uvb,
+                           const std::vector<jcy::Vertice>& vb,
+                           const std::vector<jcy::Vertice>& uvb,
                            std::vector<Triangle>& tristrip)
 {
   for (size_t ss = 0; ss < idxbuffer.size(); ss += 3)
@@ -372,7 +372,7 @@ int main(int, char** argv)
   std::ifstream ifs(argv[1], std::ifstream::in | std::ifstream::binary);
   std::ofstream ofs(argv[2], std::ofstream::out | std::ofstream::binary);
   MeshFileHeader fheader;
-  Jcy::ObjFile objwriter;
+  jcy::ObjFile objwriter;
 
   ifs.read(reinterpret_cast<char*>(&fheader), sizeof(fheader));
 
@@ -411,7 +411,7 @@ int main(int, char** argv)
   std::cout << vb[0] << std::endl;
   Decimate(uvb, 2 * fheader.vertices_size, 3);
 
-  std::vector<Jcy::Vertice> vbvec, uvbvec;
+  std::vector<jcy::Vertice> vbvec, uvbvec;
   std::vector<uint16_t> ibvec;
   std::vector<Triangle> tristrip;
   TriangleBuffer tribuffer;

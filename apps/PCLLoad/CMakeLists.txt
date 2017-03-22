@@ -1,10 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.7)
 project(PCLLoad)
-
-if(MSVC)
-  add_definitions("-DHVR_WINDOWS_DLL_API=__declspec\(dllimport\)")
-endif()
-
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/PCLLoad.cpp
@@ -12,29 +7,41 @@ ${PROJECT_SOURCE_DIR}/src/PCLKernel.cu
 ${PROJECT_SOURCE_DIR}/src/PCLKernel.cuh
 )
 
-# Find dependent libraries
 find_package( PCL REQUIRED )
 find_package( OpenCV REQUIRED )
 find_package( CUDA REQUIRED )
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52;")
-list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50;")
-
-# Include paths
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
-include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
-include_directories(../../modules/PCL/include)
-
-if(MSVC)
-  string(REGEX REPLACE "/W[0-4]" "/W3" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") OR CMAKE_COMPILER_IS_GNUCC
+    OR CMAKE_COMPILER_IS_GNUCXX)
   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-  list(APPEND CUDA_NVCC_FLAGS "-std=c++11;")
+  set(CUDA_NVCC_FLAGS "-std=c++11")
 endif()
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_61,code=sm_61")
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_52,code=sm_52")
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_50,code=sm_50")
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_35,code=sm_35")
+list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30")
 
-# Compile project into application
+# for visual studio
+string(REPLACE "/w44668" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+string(REPLACE "/sdl" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+
+
+source_group("src" FILES ${PROJECT_SRCS})
+ 
 cuda_add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
-# Link application to libraries
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+                          ${PCL_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS})
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+                          $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                          $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES})
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER ${CMAKE_PROJECT_NAME}/apps)
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${CMAKE_PROJECT_NAME}Targets
+        DESTINATION bin)

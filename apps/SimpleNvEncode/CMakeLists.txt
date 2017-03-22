@@ -1,25 +1,24 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.7)
 project(SimpleNvEncode)
-
-if(MSVC)
-  add_definitions("-DHVR_WINDOWS_DLL_API=__declspec\(dllimport\)")
-endif()
 
 set(PROJECT_SRCS
 ${PROJECT_SOURCE_DIR}/src/NvEncode.cpp
 )
 
-# Find dependent libraries
+source_group("src" FILES ${PROJECT_SRCS})
+
 find_package( CUDA REQUIRED )
 find_package( NVCODEC REQUIRED )
 
-# Include paths
-include_directories(SYSTEM ${CUDA_INCLUDE_DIRS})
-include_directories(SYSTEM ${NVCODEC_INCLUDE_DIRS})
-
-# Compile project into application
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
-# Link application to libraries
-target_link_libraries(${PROJECT_NAME} nvidia-encode)
-target_link_libraries(${PROJECT_NAME} cuda)
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+                          ${CUDA_INCLUDE_DIRS} ${NVCODEC_INCLUDE_DIRS})
+
+target_link_libraries(${PROJECT_NAME}  nvidia-encode cuda )
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER ${CMAKE_PROJECT_NAME}/apps)
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${CMAKE_PROJECT_NAME}Targets
+        DESTINATION bin)

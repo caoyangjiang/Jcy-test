@@ -1,6 +1,6 @@
 // Copyright @ 2016 Caoyang Jiang
 
-HVR_WINDOWS_DISABLE_ALL_WARNING
+JCY_WINDOWS_DISABLE_ALL_WARNING
 #include <stdint.h>
 #include <x264.h>
 #include <cstring>
@@ -8,7 +8,7 @@ HVR_WINDOWS_DISABLE_ALL_WARNING
 #include <iostream>
 #include <memory>
 #include <vector>
-HVR_WINDOWS_ENABLE_ALL_WARNING
+JCY_WINDOWS_ENABLE_ALL_WARNING
 
 class VideoEncoder
 {

@@ -13,7 +13,7 @@ find_package( Eigen3 REQUIRED )
 add_executable(${PROJECT_NAME} ${PROJECT_SRCS})
 
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-                          ${Boost_LIBRARIES} ${EIGEN3_INCLUDE_DIR})
+                          ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
 
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} jcy_transform)
