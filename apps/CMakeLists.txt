@@ -40,7 +40,7 @@ add_subdirectory(SimpleNvDecode) # Require CUDA, NVCUVID
 
 add_subdirectory(IEClient)
 add_subdirectory(IEServer)
-
+add_subdirectory(GpuMotionEstimate)
 #Deprecated
 #add_subdirectory(BufferDecoder) # Require FFmpeg
 #add_subdirectory(SimpleRTPServer) # Require FFmpeg
