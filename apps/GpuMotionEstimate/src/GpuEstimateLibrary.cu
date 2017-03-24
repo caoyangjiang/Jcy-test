@@ -87,4 +87,40 @@ void GpuPredictor::InterEstimate(const std::vector<int16_t>& in,
   cudaFree(dres);
   cudaFree(dref);
 }
+
+void CpuPredictor::InterEstimate(const std::vector<int16_t>& in,
+                                 const std::vector<int16_t>& ref,
+                                 std::vector<uint8_t>& mv,
+                                 std::vector<int16_t>& res)
+{
+  int count = static_cast<int>(in.size());
+  mv.resize(count);
+  res.resize(count);
+
+  for (int c = 0; c < count; c++)
+  {
+    uint16_t sad[4] = {65535, 65535, 65535, 65535};
+    int16_t pin;
+    uint8_t mvloc = 0;
+
+    pin = in[c];
+
+    sad[0]                   = abs(pin - ref[c]);
+    if ((c - 1) >= 0) sad[1] = abs(pin - ref[c - 1]);
+    if ((c - 2) >= 0) sad[2] = abs(pin - ref[c - 2]);
+    if ((c - 3) >= 0) sad[3] = abs(pin - ref[c - 3]);
+
+    for (uint8_t i = 1; i < 4; i++)
+    {
+      if (sad[i] < sad[0])
+      {
+        sad[0] = sad[i];
+        mvloc  = i;
+      }
+    }
+
+    mv[c]  = mvloc;
+    res[c] = pin - ref[c - mvloc];
+  }
+}
 }  // namespace jcy

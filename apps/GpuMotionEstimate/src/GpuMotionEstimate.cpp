@@ -46,5 +46,11 @@ int main(int, char**)
   milliseconds = end - beg;
   std::cout << "[Gpu time]: " << milliseconds.count() << " ms" << std::endl;
 
+  beg = std::chrono::high_resolution_clock::now();
+  jcy::CpuPredictor::InterEstimate(in, ref, mv, res);
+  end          = std::chrono::high_resolution_clock::now();
+  milliseconds = end - beg;
+  std::cout << "[Cpu time]: " << milliseconds.count() << " ms" << std::endl;
+
   return 0;
 }

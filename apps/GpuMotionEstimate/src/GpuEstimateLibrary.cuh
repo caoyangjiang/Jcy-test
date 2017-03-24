@@ -14,4 +14,12 @@ class GpuPredictor
                             std::vector<int16_t>& res);
 };
 
+class CpuPredictor
+{
+ public:
+  static void InterEstimate(const std::vector<int16_t>& in,
+                            const std::vector<int16_t>& ref,
+                            std::vector<uint8_t>& mv,
+                            std::vector<int16_t>& res);
+};
 }  // namespace hvr
