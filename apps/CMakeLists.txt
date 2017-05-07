@@ -38,6 +38,8 @@ add_subdirectory(BlockCompression) # Require Squish, OpenCV
 add_subdirectory(SimpleNvEncode) # Require CUDA, NVIDIA-ENCODE
 add_subdirectory(SimpleNvDecode) # Require CUDA, NVCUVID
 
+add_subdirectory(MPITest)
+add_subdirectory(MPIIntegration)
 add_subdirectory(IEClient)
 add_subdirectory(IEServer)
 add_subdirectory(GpuMotionEstimate)
