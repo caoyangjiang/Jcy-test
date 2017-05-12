@@ -69,7 +69,8 @@ int main(int argc, char **argv)
     sum += psum;
   }
 
-  std::cout << sum << std::endl;
+  if (world_rank == 0) std::printf("Integration result: %3.16f\n", sum);
+
   // Finalize the MPI environment.
   MPI_Finalize();
 }

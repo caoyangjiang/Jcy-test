@@ -7,7 +7,9 @@
 __device__ static double XSQUARE(double x)
 {
   // return x * x;
-  return x * x + 2 * x;
+  // return x * x + 2 * x;
+  return sin(x);
+  // return pow(x, 2);
 }
 
 __global__ static void IntegrationKernal(double startx,
@@ -18,6 +20,7 @@ __global__ static void IntegrationKernal(double startx,
   const int y  = blockIdx.y * blockDim.y + threadIdx.y;
   const int mx = gridDim.x * blockDim.x;
 
+  // for (size_t i      = 0; i < 100000; i++)
   psum[y * mx + x] = (XSQUARE(startx + (y * mx + x) * increment) +
                       XSQUARE(startx + (y * mx + x + 1) * increment)) *
                      increment / 2;
